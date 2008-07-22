@@ -20,7 +20,7 @@ def warn(string, args=()):
 if __name__ == '__main__':
     parser = OptionParser(version='%prog 0.6', usage='%prog FILE...')
     parser.add_option('-d', '--document', action='store_true', default=False,
-            help="Usa la modalità per documenti (Nome Cognome - Documento.ext)")
+            help=u"Usa la modalità per documenti (Nome Cognome - Documento.ext)")
     parser.add_option('-v', '--verbose', action='store_true', default=False,
             help="Mostra su STDOUT le azioni compiute")
     parser.add_option('-t', '--test', action='store_true', default=False,
