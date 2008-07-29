@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# 2008-07-29 - Introduzione di check_requirements.sh
 # 2008-06-03 - Piccole modifiche:
 #   * formula a tutta pagina ($$_$$ invece che $_$)
 #   * sfondo bianco
@@ -16,6 +17,10 @@ if [ -z "${1}" -o -n "${3}" ]; then
 elif [ -e "${1}.png" ]; then
     echo "Error! '${1}.png' esistente!" >&2
     exit 2
+fi
+
+if ! check_requirements.sh pwd mktemp latex dvipng; then
+    exit -1
 fi
 
 homeDir="$(pwd)"

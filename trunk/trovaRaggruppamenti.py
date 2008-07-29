@@ -5,14 +5,17 @@
 # trovaRaggruppamenti.py
 
 from itertools import groupby
-def trovaRaggruppamenti(numeroPagineTotali, base = 4):
+from optparse import OptionParser
+
+def trovaRaggruppamenti(pagine_totali, base=4):
     trovati = []
     i = 1
     while (base*i) < numeroPagineTotali:
         raggruppamenti = base*i
         trovati.append((raggruppamenti,
                 numeroPagineTotali/raggruppamenti +
-                (1 if numeroPagineTotali%raggruppamenti else 0)))
+                (1 if numeroPagineTotali%raggruppamenti else 0),
+                numeroPagineTotali%raggruppamenti))
         i += 1
     return groupby(trovati, lambda x:x[1])
 
