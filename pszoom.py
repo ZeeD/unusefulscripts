@@ -41,7 +41,7 @@ def calcola_bordi(stream_in, max_numero_pagine=3):
 
 def effettua_zoom((x0, y0, x1, y1), stream_in, stream_out):
     # 1 inch = 72 punti = 25.40 mm -> 1 mm = 72/25.40 punti
-    width, height = map(lambda m: m*72/25.40, (210., 297.)) # di default ho A4
+    width, height = map(lambda m: m*72./25.40, (210., 297.)) # di default ho A4
     s1, s2 = tee(stream_in)
     for row in s1:
         if row.startswith('%%BoundingBox:'):
@@ -52,7 +52,7 @@ def effettua_zoom((x0, y0, x1, y1), stream_in, stream_out):
     page_spec = "0@%(scale)f(%(xoff)f,%(yoff)f)" % {
         'scale': min(width/(x1-x0), height/(y1-y0)),
         'xoff': -x0,
-        'yoff': -y0
+        'yoff': -y0#-72 # mmm, ma perché c'è questo offset di un pollice???
     }
     popen_pstops = Popen(('pstops', page_spec), stdin=PIPE, stdout=stream_out)
     for row in s2:

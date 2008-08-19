@@ -1,36 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 2008-06-14 - Supporto per le opzioni '-d', '-t' e '-v'
-# 2007-12-09 - Supporto per i nomi di relazioni --> 'Autore[, Autore]* - Titolo.(ps|pdf)'
-# 2007-07-16 - OptionParser + patch filename in utf-8
-# 2007-05-18 - versione in utf-8
-# 2006-10-23 - patch per "..."
-# 2006-04-08
-# SistemaCase.py
-
-from optparse import OptionParser
-from os.path import split, join
-from os import access, rename, F_OK
-from sys import stderr
+import sys
+import optparse
+import os
 
 def warn(string, args=()):
-    print >> stderr, "Warning:", string % args
+    "Comunica warning su stderr, con una sintassi simile a quella di optparse"
+    sys.stderr.write('%s: warning: %s\n' % (sys.argv[0], string % args))
 
-if __name__ == '__main__':
-    parser = OptionParser(version='%prog 0.6', usage='%prog FILE...')
-    parser.add_option('-d', '--document', action='store_true', default=False,
-            help=u"Usa la modalità per documenti (Nome Cognome - Documento.ext)")
-    parser.add_option('-v', '--verbose', action='store_true', default=False,
-            help="Mostra su STDOUT le azioni compiute")
-    parser.add_option('-t', '--test', action='store_true', default=False,
-            help="Non compiere nessuna rinomina (utile con '--verbose')")
-
-    options, args = parser.parse_args()
+def sistema_case(options, args):
     for parametro in args:
-        percorso, vecchioNome = split(parametro)
+        percorso, vecchioNome = os.path.split(parametro)
         if not vecchioNome: # se è una directory
-            percorso, vecchioNome = split(percorso)
+            percorso, vecchioNome = os.path.split(percorso)
 
         vecchioNomeSplittato = vecchioNome.split(' - ')
         nuovoNome = []
@@ -42,7 +25,7 @@ if __name__ == '__main__':
                 autori.append(autore.decode('utf8').capitalize().encode('utf8'))
             nuovoNome.append(', '.join(autori))
 
-        for el in vecchioNomeSplittato[1:] if options.document else vecchioNomeSplittato:
+        for el in vecchioNomeSplittato[options.document:]:
             nuovoNome.append(el.decode('utf8').capitalize().encode('utf8'))
 
         nuovoNome = ' - '.join(nuovoNome)
@@ -57,12 +40,47 @@ if __name__ == '__main__':
                     tmp[i] = e[:-1] # per "..."
         nuovoNome = '.'.join(tmp)
 
-        vecchioNome = join(percorso, vecchioNome)
-        nuovoNome = join(percorso, nuovoNome)
-        if access(nuovoNome, F_OK):
+        vecchioNome = os.path.join(percorso, vecchioNome)
+        nuovoNome = os.path.join(percorso, nuovoNome)
+        if os.path.exists(nuovoNome):
             warn("%s è già usato!", nuovoNome)
         else:
             if options.verbose:
                 print vecchioNome, '->', nuovoNome
             if not options.test:
-                rename(vecchioNome, nuovoNome)
+                os.rename(vecchioNome, nuovoNome)
+
+def filenames(recursive, args):
+    "Generatore di tutti i file da rinominare (utile se recursive=True)"
+    for arg in args:
+        if recursive:
+            for (base, dirs, files) in os.walk(arg, topdown=False):
+                for file_ in files:
+                    yield os.path.join(base, file_)
+                for dir_ in dirs:
+                    yield os.path.join(base, dir_)
+        yield arg
+
+class OptionParser(optparse.OptionParser):
+    def check_values(self, values, args):
+        u"Controlla se c'è almeno un parametro e che tutti corrispondano a file"
+        if not args:
+            self.error(u'Devi definire almeno un file da rinominare!')
+        for arg in args:
+            if not os.path.exists(arg):
+                self.error(u"File non trovato: `%s'" % arg)
+        return optparse.OptionParser.check_values(self, values, args)
+
+if __name__ == '__main__':
+    parser = OptionParser(version='%prog 0.7', usage='%prog FILE...')
+    parser.add_option('-d', '--document', action='store_true',
+            help=u"Modalità per documenti (Nome Cognome - Documento.ext)")
+    parser.add_option('-v', '--verbose', action='store_true',
+            help=u"Mostra su STDOUT le azioni compiute")
+    parser.add_option('-t', '--test', action='store_true',
+            help=u"Non compiere nessuna rinomina (utile con '--verbose')")
+    parser.add_option('-r', '-R', '--recursive', action='store_true',
+            help=u"Agisci in modo ricorsivo anche nelle sotto-directory")
+    options, args = parser.parse_args()
+
+    sistema_case(options, filenames(options.recursive, args))
