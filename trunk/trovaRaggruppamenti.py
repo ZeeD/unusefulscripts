@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 2007-12-31
-# trovaRaggruppamenti.py
-
 from itertools import groupby
-from optparse import OptionParser
 
 def trovaRaggruppamenti(pagine_totali, base=4):
     trovati = []
