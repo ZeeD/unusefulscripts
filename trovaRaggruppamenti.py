@@ -10,12 +10,12 @@ from optparse import OptionParser
 def trovaRaggruppamenti(pagine_totali, base=4):
     trovati = []
     i = 1
-    while (base*i) < numeroPagineTotali:
+    while (base*i) < pagine_totali:
         raggruppamenti = base*i
+        resto = pagine_totali%raggruppamenti
         trovati.append((raggruppamenti,
-                numeroPagineTotali/raggruppamenti +
-                (1 if numeroPagineTotali%raggruppamenti else 0),
-                numeroPagineTotali%raggruppamenti))
+                pagine_totali/raggruppamenti + (1 if resto else 0),
+                resto))
         i += 1
     return groupby(trovati, lambda x:x[1])
 
