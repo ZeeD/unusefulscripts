@@ -1,15 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 2008-05-04 - aggiunte le opzioni '--current-dir' e '--set-output-dir',
-#              ripulitura generale
-# 2008-03-16 - aggiunti altri formati supportati (1920x1440)
-# 2007-12-26 - aggiunti altri formati supportati (1440x900)
-# 2007-07-16 - unWall
-# 2007-07-13 - versione in utf-8
-# 2006-09-17
-# Walla2.py
-
 outDir = '/media/iomegaZeD/Immagini/Wallpaper'
 risoluzioniAccettate = (
     (640,480), (800,600), (1024,768), (1280,960), (1600,1200), (1920,1440),# 4:3
