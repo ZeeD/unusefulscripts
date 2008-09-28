@@ -3,7 +3,7 @@
 
 from optparse import OptionParser, OptionValueError
 from os import chdir, listdir, rename
-from os.path import abspath, basename, curdir, exists, splitext
+from os.path import abspath, basename, curdir, exists, splitext, isfile
 from warnings import warn
 from Image import open
 
@@ -53,8 +53,8 @@ def sort_images(image_file_name):
     return (x*y, -abs(x-y))
 
 chdir(options.dir)
-filePresenti = sorted(listdir('.'), key=sort_images if options.imgs else None,
-        reverse=options.imgs)
+filePresenti = sorted(filter(isfile, listdir('.')), key=sort_images if
+        options.imgs else None, reverse=options.imgs)
 
 associa = []
 for file in filePresenti:
