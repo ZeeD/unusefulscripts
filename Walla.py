@@ -7,18 +7,17 @@ risoluzioniAccettate = (
     (1280,800), (1280,1024), (1440, 900)                                 # altre
 )
 
-from optparse import OptionParser
+from optparse import OptionParser, OptionValueError
 from os.path import isdir, isfile, basename, abspath, join, split, exists, \
         islink, realpath, dirname
 from sys import stderr, exit
 from os import listdir, symlink, remove
 from Image import open
-from shutil import move
+from shutil import move, copy
 
 def walla_unwalla(directories, files):
     for directory in directories:
-        for file in listdir(directory):
-            file = join(directory, file)
+        for file in (join(directory, f) for f in listdir(directory)):
             if isfile(file):
                 if options.unwall:
                     unwallaFile(file)
@@ -48,19 +47,34 @@ def wallaFile(file):
             base, nomeFile = split(file)
             if options.add_dirname:
                 dir_name = split(base)[1]
-                outputFile = join(outDir, '%sx%s - %s - %s' % (size + (dir_name,
-                        nomeFile)))
+                if options.phase_1:
+                    outputFile = '%sx%s - %s - %s' % (size + (dir_name,
+                            nomeFile))
+                elif options.phase_2:
+                    outputFile = join(outDir, nomeFile)
+                else:
+                    outputFile = join(outDir, '%sx%s - %s - %s' % (size +
+                            (dir_name, nomeFile)))
             else:
-                outputFile = join(outDir, '%sx%s - %s' % (size + (nomeFile, )))
+                if options.phase_1:
+                    outputFile = '%sx%s - %s' % (size + (nomeFile, ))
+                elif options.phase_2:
+                    outputFile = join(outDir, nomeFile)
+                else:
+                    outputFile = join(outDir, '%sx%s - %s' % (size + (nomeFile,
+                            )))
             if exists(outputFile):
                 warn("`%s' è già esistente.", outputFile)
             else:
                 if options.verbose:
                     print "\t-> `%s'" % (outputFile, )
                 if not options.test:
-                    move(file, outputFile)
-                    if options.link:
-                        symlink(outputFile, file)
+                    if not options.copy:
+                        move(file, outputFile)
+                        if options.link:
+                            symlink(outputFile, file)
+                    else:
+                        copy(file, outputFile)
 
 def unwallaFile(inputFileName):
     try:
@@ -89,13 +103,13 @@ def unwallaFile(inputFileName):
                 move(realFileName, outputFileName)
 
 def warn(string, args=(), fatal=False):
-    print >> stderr, "Warning:", string % args
+    print >> stderr, "Warning:" if not fatal else "Error:", string % args
     if fatal:
         exit(fatal)
 
-def set_output_dir(option, opt, value, parser):
+def set_output_dir(value):
     if not isdir(value):
-        warn("Errore! `%s' non è una directory!", value, fatal=True)
+        warn("`%s' non è una directory!", value, fatal=True)
     from sys import argv
     temp = []
     for line in file(argv[0], 'r'):
@@ -108,12 +122,21 @@ def set_output_dir(option, opt, value, parser):
     file_out.close()
     exit()
 
+def check_is_false(attribute):
+    def callback(option, opt_str, value, parser):
+        if getattr(parser.values, attribute):
+            raise OptionValueError("Non puoi settare %s se hai già impostato "
+                    "%s" % (option.dest, attribute))
+        setattr(parser.values, option.dest, True)
+    return callback
+
 if __name__ == '__main__':
-    parser = OptionParser(version='%prog 0.3',
-            usage="%prog [options] [DIRS='.'|FILES]")
-    parser.add_option('-l', '--link', action='store_true', default=False,
-            help="dopo aver spostato i file, crea dei link simbolici nelle \
-posizioni originarie")
+    parser = OptionParser(version='%prog 0.4', usage="%prog [options] [DIRS='.'"
+            "|FILES]")
+    parser.add_option('-l', '--link', action='callback', dest='link',
+            default=False, callback=check_is_false('copy'), help="dopo aver "
+                    "spostato i file, crea dei link simbolici nelle posizioni "
+                    "originarie")
     parser.add_option('-t', '--test', action='store_true', default=False,
             help="effettua solo un test, non sposta i file")
     parser.add_option('-u', '--unwall', action='store_true', default=False,
@@ -121,17 +144,23 @@ posizioni originarie")
     parser.add_option('-v', '--verbose', action='store_true', default=False,
             help="mostra su STDOUT cosa accade (utile con --test)")
     parser.add_option('-a', '--add-dirname', action='store_true', default=False,
-            help="""aggiunge il nome della directory come prefisso al file di \
-output""")
-    parser.add_option('-s', '--set-output-dir', action='callback', type=str,
-            callback=set_output_dir, help="""Imposta una nuova directory di \
-output (corrente = `%s')""" % outDir)
-    parser.add_option('-c', '--current-dir', action='store_true', default=False,
-            help="Rinomina i files nella directory corrente")
+            help="aggiunge il nome della directory prefisso al file di output")
+    parser.add_option('-s', '--set-output-dir', action='store', type=str,
+                default=None, dest='outDir', help="imposta una nuova "
+                        "directory di output (corrente = `%default')")
+    parser.add_option('-c', '--copy', action='callback', dest='copy',
+            default=False, callback=check_is_false('link'), help="copia i "
+                    "file, invece di spostarli")
+    parser.add_option('-1', '--phase-1', action='callback', dest='phase_1',
+            default=False, callback=check_is_false('phase_2'), help="effettua "
+                    "solo la rinomina dei file nella directory corrente")
+    parser.add_option('-2', '--phase-2', action='callback', dest='phase_2',
+            default=False, callback=check_is_false('phase_1'), help="effettua "
+                    "solo lo spostamento dei file nella directory remota")
     options, args = parser.parse_args()
 
-    if options.current_dir:
-        outDir = ''
+    if options.outDir:
+        set_output_dir(options.outDir)
 
     if not args:
         walla_unwalla(directories=[abspath('.')], files=[])
