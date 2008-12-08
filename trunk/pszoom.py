@@ -8,7 +8,7 @@
 from subprocess import Popen, PIPE, STDOUT
 from itertools import tee
 
-def calcola_bordi(stream_in, max_numero_pagine=3):
+def calcola_bordi(stream_in, max_numero_pagine=5):
     from os import kill, O_NONBLOCK
     from signal import SIGTERM
     from fcntl import fcntl, F_GETFL, F_SETFL
