@@ -45,24 +45,16 @@ def wallaFile(file):
             warn("`%s' non è un wallpaper.", file)
         else:
             base, nomeFile = split(file)
-            if options.add_dirname:
-                dir_name = split(base)[1]
-                if options.phase_1:
-                    outputFile = '%sx%s - %s - %s' % (size + (dir_name,
-                            nomeFile))
-                elif options.phase_2:
-                    outputFile = join(outDir, nomeFile)
-                else:
-                    outputFile = join(outDir, '%sx%s - %s - %s' % (size +
-                            (dir_name, nomeFile)))
+            if options.phase_1:
+                outputFile = '%s/%sx%s%s - %s' % ((base, ) + size + (" - %s" %
+                        split(base)[1] if options.add_dirname else "", nomeFile
+                        ))
+            elif options.phase_2:
+                outputFile = join(outDir, nomeFile)
             else:
-                if options.phase_1:
-                    outputFile = '%sx%s - %s' % (size + (nomeFile, ))
-                elif options.phase_2:
-                    outputFile = join(outDir, nomeFile)
-                else:
-                    outputFile = join(outDir, '%sx%s - %s' % (size + (nomeFile,
-                            )))
+                outputFile = join(outDir, '%sx%s%s - %s' % (size + (" - %s" %
+                        split(base)[1] if options.add_dirname else "", nomeFile
+                        )))
             if exists(outputFile):
                 warn("`%s' è già esistente.", outputFile)
             else:
@@ -122,41 +114,42 @@ def set_output_dir(value):
     file_out.close()
     exit()
 
-def check_is_false(attribute):
+def check_is_false(attributes):
     def callback(option, opt_str, value, parser):
-        if getattr(parser.values, attribute):
-            raise OptionValueError("Non puoi settare %s se hai già impostato "
-                    "%s" % (option.dest, attribute))
+        for attribute in attributes:
+            if getattr(parser.values, attribute):
+                raise OptionValueError("Non puoi settare %s se hai già "
+                        "impostato %s" % (option.dest, attribute))
         setattr(parser.values, option.dest, True)
     return callback
 
 if __name__ == '__main__':
     parser = OptionParser(version='%prog 0.4', usage="%prog [options] [DIRS='.'"
             "|FILES]")
-    parser.add_option('-l', '--link', action='callback', dest='link',
-            default=False, callback=check_is_false('copy'), help="dopo aver "
-                    "spostato i file, crea dei link simbolici nelle posizioni "
-                    "originarie")
+    parser.add_option('-l', '--link', action='callback', default=False,
+            dest='link', callback=check_is_false(('copy', )), help="crea dei "
+            "link simbolici nelle posizioni originarie")
     parser.add_option('-t', '--test', action='store_true', default=False,
             help="effettua solo un test, non sposta i file")
     parser.add_option('-u', '--unwall', action='store_true', default=False,
             help="ritorna ai valori originari")
     parser.add_option('-v', '--verbose', action='store_true', default=False,
             help="mostra su STDOUT cosa accade (utile con --test)")
-    parser.add_option('-a', '--add-dirname', action='store_true', default=False,
-            help="aggiunge il nome della directory prefisso al file di output")
-    parser.add_option('-s', '--set-output-dir', action='store', type=str,
-                default=None, dest='outDir', help="imposta una nuova "
-                        "directory di output (corrente = `%default')")
-    parser.add_option('-c', '--copy', action='callback', dest='copy',
-            default=False, callback=check_is_false('link'), help="copia i "
-                    "file, invece di spostarli")
-    parser.add_option('-1', '--phase-1', action='callback', dest='phase_1',
-            default=False, callback=check_is_false('phase_2'), help="effettua "
-                    "solo la rinomina dei file nella directory corrente")
-    parser.add_option('-2', '--phase-2', action='callback', dest='phase_2',
-            default=False, callback=check_is_false('phase_1'), help="effettua "
-                    "solo lo spostamento dei file nella directory remota")
+    parser.add_option('-a', '--add-dirname', action='callback', default=False,
+            dest='add_dirname', callback=check_is_false(('phase_2', )),
+            help="aggiunge il nome della directory nel nome del file di output")
+    parser.add_option('-s', '--set-output-dir', action='store', default=None,
+            dest='outDir', type=str, help="imposta una nuova directory di "
+            "output (corrente = `%s')" % outDir)
+    parser.add_option('-c', '--copy', action='callback', default=False,
+            dest='copy', callback=check_is_false(('link', )), help="copia i "
+            "file, invece di spostarli")
+    parser.add_option('-1', '--phase-1', action='callback', default=False,
+            dest='phase_1', callback=check_is_false(('phase_2', )),
+            help="formatta i file nella directory corrente")
+    parser.add_option('-2', '--phase-2', action='callback', default=False,
+            dest='phase_2', callback=check_is_false(('phase_1', 'add_dirname')),
+            help="sposta i file nella directory remota")
     options, args = parser.parse_args()
 
     if options.outDir:
