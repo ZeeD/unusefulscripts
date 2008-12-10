@@ -114,7 +114,7 @@ def set_output_dir(value):
     file_out.close()
     exit()
 
-def check_is_false(attributes):
+def check_is_false(*attributes):
     def callback(option, opt_str, value, parser):
         for attribute in attributes:
             if getattr(parser.values, attribute):
@@ -127,8 +127,8 @@ if __name__ == '__main__':
     parser = OptionParser(version='%prog 0.4', usage="%prog [options] [DIRS='.'"
             "|FILES]")
     parser.add_option('-l', '--link', action='callback', default=False,
-            dest='link', callback=check_is_false(('copy', )), help="crea dei "
-            "link simbolici nelle posizioni originarie")
+            dest='link', callback=check_is_false('copy'), help="crea anche dei "
+                    "link simbolici nelle posizioni originarie")
     parser.add_option('-t', '--test', action='store_true', default=False,
             help="effettua solo un test, non sposta i file")
     parser.add_option('-u', '--unwall', action='store_true', default=False,
@@ -136,19 +136,19 @@ if __name__ == '__main__':
     parser.add_option('-v', '--verbose', action='store_true', default=False,
             help="mostra su STDOUT cosa accade (utile con --test)")
     parser.add_option('-a', '--add-dirname', action='callback', default=False,
-            dest='add_dirname', callback=check_is_false(('phase_2', )),
+            dest='add_dirname', callback=check_is_false('phase_2'),
             help="aggiunge il nome della directory nel nome del file di output")
     parser.add_option('-s', '--set-output-dir', action='store', default=None,
             dest='outDir', type=str, help="imposta una nuova directory di "
-            "output (corrente = `%s')" % outDir)
+                    "output (corrente = `%s')" % outDir)
     parser.add_option('-c', '--copy', action='callback', default=False,
-            dest='copy', callback=check_is_false(('link', )), help="copia i "
-            "file, invece di spostarli")
+            dest='copy', callback=check_is_false('link'), help="copia i file, "
+                    "invece di spostarli")
     parser.add_option('-1', '--phase-1', action='callback', default=False,
-            dest='phase_1', callback=check_is_false(('phase_2', )),
-            help="formatta i file nella directory corrente")
+            dest='phase_1', callback=check_is_false('phase_2'), help="formatta "
+                    "i file nella directory corrente")
     parser.add_option('-2', '--phase-2', action='callback', default=False,
-            dest='phase_2', callback=check_is_false(('phase_1', 'add_dirname')),
+            dest='phase_2', callback=check_is_false('phase_1', 'add_dirname'),
             help="sposta i file nella directory remota")
     options, args = parser.parse_args()
 
