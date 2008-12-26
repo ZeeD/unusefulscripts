@@ -3,12 +3,11 @@
 
 from optparse import OptionParser, OptionValueError
 from os import chdir, listdir, rename
-from os.path import abspath, basename, curdir, exists, splitext, isfile
+from os.path import abspath, basename, curdir, exists, splitext, isfile, isdir
 from warnings import warn
 from Image import open
 
 def check_dir(option, opt, value, parser):
-    from os.path import isdir
     if isdir(value):
         parser.values.dir = value
     else:
@@ -34,6 +33,8 @@ parser.add_option('-i', '--imgs', action='store_true', default=False,
         help="treat files as images, sort then by pixel resolution, not name")
 parser.add_option('-t', '--test', action='store_true', default=False,
         help="test only: doesn't actually rename anything")
+parser.add_option('-a', '--also-dir', action='store_true', default=False,
+        help="rename also the name of the directories (not recursive!)")
 options, args = parser.parse_args()
 
 try:
@@ -52,8 +53,14 @@ def sort_images(image_file_name):
     x, y = open(image_file_name).size
     return (x*y, -abs(x-y))
 
+def condition(filename):
+    if options.also_dir:
+        return isfile(filename) or isdir(filename)
+    else:
+        return isfile(filename)
+
 chdir(options.dir)
-filePresenti = sorted(filter(isfile, listdir('.')), key=sort_images if
+filePresenti = sorted(filter(condition, listdir('.')), key=sort_images if
         options.imgs else None, reverse=options.imgs)
 
 associa = []
