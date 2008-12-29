@@ -29,7 +29,7 @@ def cli(pagina):
     from curses import initscr, error, endwin, KEY_DOWN, KEY_UP
 
     testo = []
-    for i in (1,2,3):
+    for i in 1, 2, 3:
         html = urlopen(indirizzo % (pagina, i)).read()
         testo.extend(analizza(html).split('\n'))
 
@@ -54,6 +54,9 @@ def cli(pagina):
             i -= 1
     endwin()
 
+def dump(pagina):
+    for i in 1, 2, 3:
+        print analizza(urlopen(indirizzo % (pagina, i)).read())
 
 def gui(argv, pagina):
     from PyQt4.QtGui import QApplication, QMainWindow, QTextEdit
@@ -66,7 +69,7 @@ def gui(argv, pagina):
     mainWindow.show()
     textEdit.setReadOnly(True)
     textEdit.setText('\n'.join(analizza(urlopen(indirizzo % (pagina,
-            i)).read()).decode('iso-8859-15') for i in (1,2,3)))
+            i)).read()).decode('iso-8859-15') for i in (1, 2, 3)))
 
     raise SystemExit(app.exec_())
 
@@ -81,12 +84,19 @@ if __name__ == '__main__':
             help="Force the ncurses cli interface")
     parser.add_option('-p', '--page', type="int", default=505,
             help="Show this page")
+    parser.add_option('-d', '--dump', action='store_true', default=False,
+            help="Force the 'just dump the content of the page' iterface")
     options, args = parser.parse_args()
+
+    if sum(int(value) for value in [options.gui, options.cli, options.dump]) > 1:
+        raise SystemExit("Puoi scegliere un'unica opzione di visualizzazione!")
 
     if options.gui:
         gui(args, options.page)
     elif options.cli:
         cli(options.page)
+    elif options.dump:
+        dump(options.page)
     else:
         from os import environ
 
