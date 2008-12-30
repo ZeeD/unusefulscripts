@@ -1,62 +1,50 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 2007-10-13 - Uso di optparse per capire che cavolo fa il programma
-# 2007-08-21 - Passaggio a PyQt4 (pykde dava errori)
-# 2007-08-21 - Verifica se viene lanciato da terminale
-# 2007-08-12 - Interfaccia grafica tramite pykde
-# 2007-08-08 - Patch per KEY_UP / KEY_DOWN
-# 2007-08-08 - Uso di curses
-# 2007-08-08 - Patch per <a href='...'>777</a>
-# 2007-08-07 - Versione iniziale
-# Televideo.py
-#
-# sostituto di
-# alias televideo='for i in 1 2 3;do lynx "www.televideo.rai.it/televideo/pub/solotesto.jsp?pagina=505&sottopagina=0$i" -accept_all_cookies -dump -nolist|head -50|tail -19;done|less'
+def analizza(pagina, i):
+    from urllib2 import urlopen
+    return _analizza(urlopen('http://www.televideo.rai.it/televideo/pub/'
+            'solotesto.jsp?pagina=%s&sottopagina=0%s' % (pagina, i)).read())
 
-from urllib2 import urlopen
-from BeautifulSoup import BeautifulSoup, NavigableString
-
-indirizzo = 'http://www.televideo.rai.it/televideo/pub/solotesto.jsp?pagina=%s&sottopagina=0%s'
-
-def analizza(html):
+def _analizza(html):
     """WARN: very black magik - la sto scrivendo e non so quel che fa"""
-    return ''.join(filter(lambda x:isinstance(x, NavigableString),
+    from BeautifulSoup import BeautifulSoup, NavigableString
+    return ''.join(filter(lambda x: isinstance(x, NavigableString),
             BeautifulSoup(html)('td', width='450', height='380', align='center',
-            valign='middle')[0]('pre')[0].contents[2:])).encode('iso-8859-15')
+            valign='middle')[0]('pre')[0].contents[2:]))
 
-def cli(pagina):
+def cli(page):
     from curses import initscr, error, endwin, KEY_DOWN, KEY_UP
+    from locale import setlocale, LC_ALL, getpreferredencoding
 
-    testo = []
+    setlocale(LC_ALL, '')
+
+    text = []
     for i in 1, 2, 3:
-        html = urlopen(indirizzo % (pagina, i)).read()
-        testo.extend(analizza(html).split('\n'))
+        text += analizza(page, i).encode(getpreferredencoding()).split('\n')
 
-    lunghezzaTesto = len(testo)
+    text_len = len(text)
     i = 0
-    schermo = initscr()
-    schermo.keypad(1)
+    screen = initscr()
+    screen.keypad(1)
     while True:
-        altezzaSchermo = schermo.getmaxyx()[0]      # terminale ridimensionabile
-        schermo.erase()
-        try:
-            schermo.addstr('\n'.join(testo[i:altezzaSchermo+i]))
-        except error:
-            pass # non l'ho ben capito, ma mi adeguo
-        carattere = schermo.getch()
-        if carattere == ord('q'):
+        screen_height = screen.getmaxyx()[0]      # terminale ridimensionabile
+        screen.erase()
+        screen.addstr('\n'.join(text[i:screen_height+i]))
+        char = screen.getch()
+        if char == ord('q'):
             break
-        elif altezzaSchermo + i < lunghezzaTesto and carattere in (ord('z'),
-                KEY_DOWN):
+        elif char in (ord('z'), KEY_DOWN) and screen_height + i < text_len:
             i += 1
-        elif i > 0 and carattere in (ord('a'), KEY_UP):
+        elif char in (ord('a'), KEY_UP) and i:
             i -= 1
+        else:
+            pass            # ignore chars not in (a, q, z, KEY_UP, KEY_DOWN)
     endwin()
 
 def dump(pagina):
     for i in 1, 2, 3:
-        print analizza(urlopen(indirizzo % (pagina, i)).read())
+        print analizza(pagina, i),
 
 def gui(argv, pagina):
     from PyQt4.QtGui import QApplication, QMainWindow, QTextEdit
@@ -68,8 +56,7 @@ def gui(argv, pagina):
     mainWindow.setCentralWidget(textEdit)
     mainWindow.show()
     textEdit.setReadOnly(True)
-    textEdit.setText('\n'.join(analizza(urlopen(indirizzo % (pagina,
-            i)).read()).decode('iso-8859-15') for i in (1, 2, 3)))
+    textEdit.setText(''.join(analizza(pagina, i) for i in (1, 2, 3)))
 
     raise SystemExit(app.exec_())
 
