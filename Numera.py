@@ -1,22 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 2007-08-04 - versione in utf-8
-# 2007-03-11 - Uso di optparse per capire che cavolo fa il programma
-# 2006-04-23
-# numera.py
-
-from optparse import OptionParser
+from optparse import OptionParser, OptionValueError
 from os import rename
-from os.path import exists
-from math import log
+from os.path import exists, basename, dirname, join, abspath, splitext
 
 def number_len(i, base=10):
     """Calcola il numero di cifre necessarie per un numero in una certa base"""
-    i = int(i) # se non è un intero, o trasformabile in esso, piangi
-    if i == 0:
-        return 1
-    return int(log(i, base)) + (1 if i > 0 else 2) # 2 è per il segno -
+    return len(str(int(i)))
 
 if __name__ == '__main__':
     parser = OptionParser(version='%prog 0.2.0', usage='''%prog (FILE|"")...
@@ -30,6 +21,12 @@ if __name__ == '__main__':
             help='Usa almeno N cifre per i numeri (default = %default)')
     parser.add_option('-t', '--test', action='store_true', default=False,
             help='Non effettuare davvero la rinomina dei file (utile con -v)')
+    parser.add_option('-u', '--use-dirname', action='store_true', default=False,
+            help='Invece del nome originale, usa il nome della directory')
+    parser.add_option('-p', '--pre', type=str, default='', metavar='STR',
+            help='Inserisci la stringa STR in testa')
+    parser.add_option('-s', '--switch', action='store_true', default=False,
+            help='Inverti di posizione nome del file e numero (utile con -u)')
 
     options, args = parser.parse_args()
 
@@ -38,12 +35,20 @@ if __name__ == '__main__':
     for pos, param in enumerate(args):
         max_number = options.begin + pos
         if param:
-            substitutions.append((param, max_number))
+            substitutions.append((dirname(param), basename(param), max_number))
 
-    format = '%%.%dd - ' % max(options.cifre, number_len(max_number))
+    format = '%%.%dd' % max(options.cifre, number_len(max_number))
 
-    for source, number in substitutions:
-        dest = format % number + source
+    for sourcedir, sourcename, number in substitutions:
+        source = join(sourcedir, sourcename)
+        filename, ext = splitext(sourcename)
+        if options.use_dirname:
+            filename = basename(abspath(sourcedir))
+        if not options.switch:
+            completefilename = "%s - %s" % (format % number, filename)
+        else:
+            completefilename = "%s - %s" % (filename, format % number)
+        dest = join(sourcedir, options.pre + completefilename + ext)
         if not exists(dest):
             if options.verbose:
                 print source, '->', dest
@@ -51,4 +56,3 @@ if __name__ == '__main__':
                 rename(source, dest)
         else:
             warn(dest + ' è già usato!', RuntimeWarning, 2)
-
