@@ -5,7 +5,7 @@ from optparse import OptionParser, OptionValueError
 from os import rename
 from os.path import exists, basename, dirname, join, abspath, splitext
 
-def number_len(i, base=10):
+def number_len(i):
     """Calcola il numero di cifre necessarie per un numero in una certa base"""
     return len(str(int(i)))
 
