@@ -150,6 +150,9 @@ if __name__ == '__main__':
             help="Non compiere nessuna rinomina (utile con '--verbose')")
 
     options, args = parser.parse_args()
+    if not args:
+        parser.print_help()
+        raise SystemExit
     filenames = filter(exists_warn, args)   # filenames è usato 2 volte
     bases, names = izip(*imap(split, filenames))
     names_with_integers = map(find_integers, names) # names_with_integers è usato 2 volte
