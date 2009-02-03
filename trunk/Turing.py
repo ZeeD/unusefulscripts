@@ -45,7 +45,7 @@ class Tape(object):
         return  ', '.join(str(el) if i != self.position else "[%s]" % str(el)
                 for i, el in enumerate(self.left_list + self.right_list))
 
-class Touring(object):
+class Turing(object):
     """A pretty simple and stupid Touring machine implementation"""
     def __init__(self, Q, Gamma, b, Sigma, delta, q0, F):
         assert(b in Gamma)
@@ -79,11 +79,11 @@ class Touring(object):
                 tape.move_left()
 
     def __str__(self):
-        return 'Touring(' + ', '.join(map(str, (self.Q, self.Gamma, self.b,
+        return 'Turing(' + ', '.join(map(str, (self.Q, self.Gamma, self.b,
                 self.Sigma, self.delta, self.q0, self.F))) + ')'
 
 if __name__ == '__main__':
-    T = Touring(Q=set(['q0', 'q1', 'q2']), Gamma=set(['a', 'b', 'c', 'd', None]),
+    T = Turing(Q=set(['q0', 'q1', 'q2']), Gamma=set(['a', 'b', 'c', 'd', None]),
             b=None, q0='q0', F=set(['q2']), Sigma=set(['a', 'b', 'c']), delta={
                     ('q0', 'a') : ('q0', 'a', 'R'),
                     ('q0', 'b') : ('q0', 'b', 'R'),
