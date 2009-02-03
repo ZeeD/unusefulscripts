@@ -10,7 +10,7 @@ risoluzioniAccettate = (
 from optparse import OptionParser, OptionValueError
 from os.path import isdir, isfile, basename, abspath, join, split, exists, \
         islink, realpath, dirname
-from sys import stderr, exit
+from sys import stderr
 from os import listdir, symlink, remove
 from Image import open
 from shutil import move, copy
@@ -97,7 +97,7 @@ def unwallaFile(inputFileName):
 def warn(string, args=(), fatal=False):
     print >> stderr, "Warning:" if not fatal else "Error:", string % args
     if fatal:
-        exit(fatal)
+        raise SystemExit(fatal)
 
 def set_output_dir(value):
     if not isdir(value):
@@ -112,7 +112,7 @@ def set_output_dir(value):
     file_out = file(argv[0], 'w')
     file_out.writelines(temp)
     file_out.close()
-    exit()
+    raise SystemExit()
 
 def check_is_false(*attributes):
     def callback(option, opt_str, value, parser):
