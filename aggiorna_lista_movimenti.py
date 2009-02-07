@@ -28,19 +28,18 @@ def aggiorna_lista_movimenti(news_file, options):
      3 righe differenti (data saldo, contabile, disponibile)         +
      5 righe uguali     (2 linee vuote, nome colonne, 2 linee vuote) +
     ?? righe aggiunte   (i nuovi movimenti)                          +
-    ?? righe uguali     (lo storico dei movimenti in comune)         +
-    ?? righe cancellate (che non m'interessano)'''
+    ?? righe uguali     (i movimenti in comune)                      +
+    ?? righe cancellate (i vecchi movimenti) '''
     news = news_file.readlines()
     out = []
     with file(historian_file_name) as historian_file:
         historian = historian_file.readlines()
         for _ in range(3):
-            hist_line = historian.pop(0)
-            news_line = news.pop(0)
-            assert hist_line == news_line   # me le aspetto uguali ^^
+            line = historian.pop(0)
+            assert line == news.pop(0)  # me le aspetto uguali ^^
             if options.verbose:
-                stderr.write(' %s' % hist_line)
-            out.append(hist_line)
+                stderr.write(' %s' % line)
+            out.append(line)
         for _ in range(3):
             hist_line = historian.pop(0)
             news_line = news.pop(0)
@@ -49,18 +48,17 @@ def aggiorna_lista_movimenti(news_file, options):
                 stderr.write('+%s' % news_line)
             out.append(news_line)
         for _ in range(5):
-            hist_line = historian.pop(0)
-            news_line = news.pop(0)
-            assert hist_line == news_line   # me le aspetto uguali ^^
+            line = historian.pop(0)
+            assert line == news.pop(0)  # me le aspetto uguali ^^
             if options.verbose:
-                stderr.write(' %s' % hist_line)
-            out.append(hist_line)
-        while historian and news and historian[0] != news[0]:   # nuove aggiunte
+                stderr.write(' %s' % line)
+            out.append(line)
+        while historian and news and historian[0] != news[0]: # nuovi movimenti
             news_line = news.pop(0)
             if options.verbose:
                 stderr.write('+%s' % news_line)
             out.append(news_line)
-        while historian:                    # storico
+        while historian:                                      # vecchi movimenti
             hist_line = historian.pop(0)
             if options.verbose:
                 stderr.write(' %s' % hist_line)
