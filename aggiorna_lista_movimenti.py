@@ -6,7 +6,7 @@ from os import remove, rename
 from os.path import isfile
 from sys import argv, stderr
 
-historian_file_name = '/home/zed/Desktop/BPOL_ListaMovi.txt'
+historian_file_name = '/media/iomegaZeD/Lista movimenti bancoposta'
 
 def set_historian(option, opt, value, parser):
     if not isfile(value):
@@ -89,13 +89,13 @@ if __name__ == '__main__':
             'file degli aggiornamenti alla fine delle operazioni')
     options, args = parser.parse_args()
 
-    try:
-        with file(args[0]) as news_file:
-            aggiorna_lista_movimenti(news_file, options)
-        if options.clear:
-            if options.verbose:
-                stderr.write('rm -f %s\n' % args[0])
-            if not options.test:
-                remove(args[0])
-    except:
+    if len(args) < 1:
         raise SystemExit(parser.print_usage())
+
+    with file(args[0]) as news_file:
+        aggiorna_lista_movimenti(news_file, options)
+    if options.clear:
+        if options.verbose:
+            stderr.write('rm -f %s\n' % args[0])
+        if not options.test:
+            remove(args[0])
