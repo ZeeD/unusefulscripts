@@ -7,11 +7,11 @@ def trovaRaggruppamenti(pagine_totali, base=4):
     trovati = []
     i = 1
     while (base*i) < pagine_totali:
-        raggruppamenti = base*i
-        resto = pagine_totali%raggruppamenti
-        trovati.append((raggruppamenti,
-                pagine_totali/raggruppamenti + (1 if resto else 0),
-                resto))
+        numero_gruppi = base*i
+        pagine_per_gruppo = pagine_totali/numero_gruppi + (1
+                if pagine_totali%numero_gruppi else 0)
+        trovati.append((numero_gruppi, pagine_per_gruppo,
+                numero_gruppi*pagine_per_gruppo - pagine_totali))
         i += 1
     return groupby(trovati, lambda x:x[1])
 
@@ -23,18 +23,16 @@ def usage(argv):
 if __name__ == '__main__':
     from sys import argv
     if len(argv) == 1:
-	usage(argv)
+        usage(argv)
     for element in argv[1:]:
         try:
             pagine = int(element)
         except:
-            usage(argv) 
+            usage(argv)
         else:
             if len(argv) != 2:
                 print "pagine: ", pagine
-            print "Numero gruppi\tPagine per gruppo"
+            print "Numero gruppi\tPagine per gruppo (facciate bianche)"
             for key, it in trovaRaggruppamenti(pagine):
-                print "\t%s\t" % key,
-                for el in it:
-                    print el[0],
-                print
+                r = ', '.join("%d(%d)" % (el[0], el[2]) for el in it)
+                print "\t%d\t%s" % (key, r)
