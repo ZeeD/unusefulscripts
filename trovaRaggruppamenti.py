@@ -1,38 +1,54 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from itertools import groupby
+def raggruppamenti(pagine_totali, base):
+    """FIXME: Shlemiel the painter's algorithm! (my pc is fast enougth -.-)"""
+    pagine_per_raggruppamento = 0
+    while pagine_per_raggruppamento < pagine_totali:
+        numero_raggruppamenti = 0
+        pagine_per_raggruppamento += base
+        while numero_raggruppamenti * pagine_per_raggruppamento < pagine_totali:
+            numero_raggruppamenti += 1
+        yield pagine_per_raggruppamento, numero_raggruppamenti
 
-def trovaRaggruppamenti(pagine_totali, base=4):
-    trovati = []
-    i = 1
-    while (base*i) < pagine_totali:
-        numero_gruppi = base*i
-        pagine_per_gruppo = pagine_totali/numero_gruppi + (1
-                if pagine_totali%numero_gruppi else 0)
-        trovati.append((numero_gruppi, pagine_per_gruppo,
-                numero_gruppi*pagine_per_gruppo - pagine_totali))
-        i += 1
-    return groupby(trovati, lambda x:x[1])
-
-def usage(argv):
+def usage(program_name):
     from sys import stderr
-    stderr.write("Uso: %s NUM_PAGINE\n" % argv[0])
-    raise SystemExit
+    stderr.write("Uso: %s PAGINE_TOTALI [BASE=4]\n" % program_name)
+
+def print_one_row(headers_l, format, pt, ppr, nr):
+    ps = ppr * nr
+    elements = (ppr, nr, ps, pt, ps-pt)
+    print format % tuple(str(n).center(l) for n,l in zip(elements, headers_l))
+
+def print_output(headers, format, pagine_totali, base, show_all=False):
+    from itertools import groupby
+    print format_string % headers
+    print "-" * (sum(map(len, headers)) + 14) # " * ", " == ", " == ", " + "
+    headers_l = map(len, headers)
+    if show_all:
+        for pagine_per_raggruppamento, numero_raggruppamenti in raggruppamenti(
+                pagine_totali, base):
+            print_one_row(headers_l, format, pagine_totali,
+                    pagine_per_raggruppamento, numero_raggruppamenti)
+    else:
+        for pagine_per_raggruppamento, numero_raggruppamenti in (min(el[1])
+                for el in groupby(raggruppamenti(pagine_totali, base),
+                        lambda e: e[1])):
+            print_one_row(headers_l, format, pagine_totali,
+                    pagine_per_raggruppamento, numero_raggruppamenti)
 
 if __name__ == '__main__':
     from sys import argv
-    if len(argv) == 1:
-        usage(argv)
-    for element in argv[1:]:
-        try:
-            pagine = int(element)
-        except:
-            usage(argv)
-        else:
-            if len(argv) != 2:
-                print "pagine: ", pagine
-            print "Numero gruppi\tPagine per gruppo (facciate bianche)"
-            for key, it in trovaRaggruppamenti(pagine):
-                r = ', '.join("%d(%d)" % (el[0], el[2]) for el in it)
-                print "\t%d\t%s" % (key, r)
+    try:
+        pagine_totali = int(argv[1])
+    except:
+        raise SystemExit(usage(argv[0]))
+    try:
+        base = int(argv[2])
+    except:
+        base = 4
+    headers = ("pagine_per_raggruppamento", "numero_raggruppamenti",
+            "pagine_stampate", "pagine_totali", "bianche")
+    format_string = "%s * %s == %s == %s + %s"
+    print_output(headers, format_string, pagine_totali, base, True)
+    print_output(headers, format_string, pagine_totali, base, False)
