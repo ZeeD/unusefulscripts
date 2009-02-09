@@ -65,7 +65,7 @@ def aggiorna_lista_movimenti(news_file, options):
             out.append(hist_line)
     if options.backup:
         if options.verbose:
-            stderr.write('mv %s %s\n' % (historian_file_name, options.backup))
+            stderr.write('mv %r %r\n' % (historian_file_name, options.backup))
         if not options.test:
             rename(historian_file_name, options.backup)
     if not options.test:
@@ -94,6 +94,6 @@ if __name__ == '__main__':
         aggiorna_lista_movimenti(news_file, options)
     if options.clear:
         if options.verbose:
-            stderr.write('rm -f %s\n' % args[0])
+            stderr.write('rm -f %r\n' % args[0])
         if not options.test:
             remove(args[0])

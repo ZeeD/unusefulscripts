@@ -15,16 +15,22 @@ def trovaRaggruppamenti(pagine_totali, base=4):
         i += 1
     return groupby(trovati, lambda x:x[1])
 
+def usage(argv):
+    from sys import stderr
+    stderr.write("Uso: %s NUM_PAGINE\n" % argv[0])
+    raise SystemExit
+
 if __name__ == '__main__':
     from sys import argv
-    argv = argv[1:]
-    for element in argv:
+    if len(argv) == 1:
+	usage(argv)
+    for element in argv[1:]:
         try:
             pagine = int(element)
         except:
-            pass
+            usage(argv) 
         else:
-            if len(argv) != 1:
+            if len(argv) != 2:
                 print "pagine: ", pagine
             print "Numero gruppi\tPagine per gruppo"
             for key, it in trovaRaggruppamenti(pagine):
