@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from optparse import OptionParser, OptionValueError
+from optparse import OptionParser
 from os import rename
 from os.path import exists, basename, dirname, join, abspath, splitext
 
@@ -55,4 +55,4 @@ if __name__ == '__main__':
             if not options.test:
                 rename(source, dest)
         else:
-            warn(dest + ' è già usato!', RuntimeWarning, 2)
+            raise RuntimeWarning("`%s' è già usato!" % dest)
