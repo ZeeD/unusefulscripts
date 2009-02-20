@@ -3,12 +3,12 @@
 
 def main(stream, encoding):
     """Conta le battute di uno stream usando il layout della tastiera italiana
-mgs  as  mds  is   id  mdd  ad  mgd
------------------------------------
-\12   3   4   56   78   9   0   'ì
- q   w   e   rt   yu   i   o   pè+
-  a   s   d   fg   hj   k   l   òàù
- < z   x   c   vb   nm   ,   .   - """
+ mgs  as  mds  is   id  mdd  ad  mgd
+------------------------------------
+\\12   3   4   56   78   9   0   'ì
+  q   w   e   rt   yu   i   o   pè+
+   a   s   d   fg   hj   k   l   òàù
+  < z   x   c   vb   nm   ,   .   - """
     d = { 'sinistra': {('\\12qa<z', 'mignolo'): 0, ('3wsx', 'anulare'): 0,
                     ('4edc', 'medio'): 0,  ('56rtfgvb', 'indice'): 0},
             'destra': {('78yuhjnm', 'indice'): 0, ('9ik,', 'medio'): 0,
