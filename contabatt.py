@@ -1,18 +1,10 @@
 #!/usr/bin/env python
-# -*- encoding: utf-8 -*-
 
 def main(stream, encoding):
-    """Conta le battute di uno stream usando il layout della tastiera italiana
- mgs  as  mds  is   id  mdd  ad  mgd
-------------------------------------
-\\12   3   4   56   78   9   0   'ì
-  q   w   e   rt   yu   i   o   pè+
-   a   s   d   fg   hj   k   l   òàù
-  < z   x   c   vb   nm   ,   .   - """
     d = { 'sinistra': {('\\12qa<z', 'mignolo'): 0, ('3wsx', 'anulare'): 0,
                     ('4edc', 'medio'): 0,  ('56rtfgvb', 'indice'): 0},
             'destra': {('78yuhjnm', 'indice'): 0, ('9ik,', 'medio'): 0,
-                    ('0ol.', 'anulare'): 0, (u"'ìpè+òàù-", 'mignolo'): 0} }
+                    ('0ol.', 'anulare'): 0, (u"'\xc3\xacp\xc3\xa8+\xc3\xb2\xc3\xa0\xc3\xb9-", 'mignolo'): 0} }
     tot = 0
     for row in stream:
         for char in row.decode(encoding):
