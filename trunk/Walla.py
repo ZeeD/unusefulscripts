@@ -4,7 +4,7 @@
 outDir = '/media/iomegaZeD/Immagini/Wallpaper'
 risoluzioniAccettate = (
     (640,480), (800,600), (1024,768), (1280,960), (1600,1200), (1920,1440),# 4:3
-    (1280,800), (1280,1024), (1440, 900)                                 # altre
+    (1280,800), (1280,1024), (1440, 900), (1680, 1050)                     # altre
 )
 
 from optparse import OptionParser, OptionValueError
