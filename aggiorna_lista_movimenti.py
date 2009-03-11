@@ -53,7 +53,8 @@ def aggiorna_lista_movimenti(news_file, options):
             if options.verbose:
                 stderr.write(' %s' % line)
             out.append(line)
-        while historian and news and historian[0] != news[0]: # nuovi movimenti
+        while news and (not historian or historian[0] != news[0]):  # nuovi
+                                                                    # movimenti
             news_line = news.pop(0)
             if options.verbose:
                 stderr.write('+%s' % news_line)

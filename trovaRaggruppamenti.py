@@ -35,8 +35,10 @@ def print_output(headers, format, pagine_totali, show_all=False):
 
 if __name__ == '__main__':
     from optparse import OptionParser
-    parser = OptionParser(version='%prog 0.3.0', usage='''%prog PAGINE_TOTALI...
-        Genera le possibili combinazioni per stampare PAGINE_TOTALI pagine''')
+    from pyPdf import PdfFileReader
+    parser = OptionParser(version='%prog 0.4.0', usage='''%prog [PDF|NUMERO]...
+        Genera le possibili combinazioni per stampare NUMERO pagine
+        (eventualmente estratte dal PDF)''')
     parser.add_option('-a', '--all', action='store_true', default=False,
             help='Mostra tutte le possibili combinazioni')
     options, args = parser.parse_args()
@@ -49,8 +51,14 @@ if __name__ == '__main__':
         raise SystemExit(parser.print_usage())
 
     for arg in args:
+        warn = False
         try:
             pagine_totali = int(arg)
-        except:
-            raise RuntimeWarning("`%s' non è un numero!" % arg)
-        print_output(headers, format_string, pagine_totali, options.all)
+        except ValueError:
+            try:
+                pagine_totali = PdfFileReader(file(arg, "rb")).numPages
+            except:
+                warn = True
+                raise RuntimeWarning("`%s' non è né un numero né un pdf!" % arg)
+        if not warn:
+            print_output(headers, format_string, pagine_totali, options.all)
