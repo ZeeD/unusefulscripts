@@ -123,6 +123,27 @@ def check_is_false(*attributes):
         setattr(parser.values, option.dest, True)
     return callback
 
+def renew(options, args):
+    from os import readlink
+    for arg in args:
+        if not islink(arg):
+            warn("`%s' non è un link simbolico!", arg)
+            continue
+        old_path = readlink(arg)
+        if isfile(old_path):
+            warn("`%s' non è un link simbolico *rotto*!", arg)
+            continue
+        new_path = join(outDir, basename(old_path))
+        if options.verbose:
+            print "`%s' -> (None)" % old_path
+        if not options.test:
+            remove(arg)
+        if options.verbose:
+            print "`%s' -> `%s'" % (arg, new_path)
+        if not options.test:
+            symlink(new_path, arg)
+    raise SystemExit()
+
 if __name__ == '__main__':
     parser = OptionParser(version='%prog 0.4', usage="%prog [options] [DIRS='.'"
             "|FILES]")
@@ -150,10 +171,15 @@ if __name__ == '__main__':
     parser.add_option('-2', '--phase-2', action='callback', default=False,
             dest='phase_2', callback=check_is_false('phase_1', 'add_dirname'),
             help="sposta i file nella directory remota")
+    parser.add_option('-r', '--renew', action='store_true', default=False,
+            help='Aggiorna dei vecchi link simbolici alla nuova walldir')
     options, args = parser.parse_args()
 
     if options.outDir:
         set_output_dir(options.outDir)
+
+    if options.renew:
+        renew(options=options, args=(args if args else sorted(listdir('.'))))
 
     if not args:
         walla_unwalla(directories=[abspath('.')], files=[])
