@@ -14,7 +14,8 @@ def raggruppamenti(pagine_totali):
 def print_one_row(headers_l, format, pt, ppr, nr):
     ps = ppr * nr
     elements = (ppr, nr, ps, pt, ps-pt)
-    print format % tuple(str(n).center(l) for n,l in zip(elements, headers_l))
+    tmp = (("%d (== 4x%d)" % (elements[0], elements[0]/4)).center(headers_l[0]), )
+    print format % (tmp + tuple(str(n).center(l) for n,l in zip(elements, headers_l)[1:]))
 
 def print_output(headers, format, pagine_totali, show_all=False):
     from itertools import groupby

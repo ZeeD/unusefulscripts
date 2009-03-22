@@ -15,9 +15,11 @@ SALDO AL    SALDO CONTABILE (euro)  SALDO DISPONIBILE (euro)
 DATA CONTABILE  DATA VALUTA ADDEBITI
 (euro)  ACCREDITI
 (euro)  DESCRIZIONE OPERAZIONI
-05/11/2008  05/11/2008      15,00   RICARICA CARTA CONTESTUALE A VENDITA 05/11/2008 11.07 BARI 6
+Nuova ricerca
 """
     data_output = ''.join(data[:3]+data[4:7]+data[-1:])
+    print "%r" % data_output
+    print "%r" % expected_output
     return expected_output == data_output
 
 def aggiorna_lista_postepay(news_file, options):
