@@ -5,6 +5,7 @@ from optparse import OptionParser
 from os import remove, rename
 from os.path import isfile
 from sys import argv, stderr
+from datetime import date
 
 historian_file_name = '/media/iomegaZeD/Lista movimenti bancoposta'
 
@@ -21,6 +22,11 @@ def set_historian(option, opt, value, parser):
     with file(argv[0], 'w') as my_file:
         my_file.writelines(temp)
     raise SystemExit
+
+def extract_date(daterow):
+    """ Estrae una data da una stringa del tipo 'Saldo al: 28/03/2009\r\n' """
+    day, month, year = map(int, daterow[10:20].split('/'))
+    return date(year=year, month=month, day=day)
 
 def aggiorna_lista_movimenti(news_file, options):
     ''' mi aspetto che tra lo historian_file e news_file ci siano:
@@ -40,6 +46,8 @@ def aggiorna_lista_movimenti(news_file, options):
             if options.verbose:
                 stderr.write(' %s' % line)
             out.append(line)
+        if extract_date(news[0]) < extract_date(historian[0]):
+            raise StandardError("Il file delle news è vecchio!")
         for _ in range(3):
             hist_line = historian.pop(0)
             news_line = news.pop(0)
