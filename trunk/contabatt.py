@@ -29,7 +29,11 @@ def main(stream, encoding):
                     tot_finger, tot_finger*100./tot_hand, tot_finger*100./tot)
     print "Divisione per tasto:"
     for char, num in sorted(d2.items(), key=lambda e:e[1], reverse=True):
-        print "\t%s: %d (%5.2f%%)" % (char, num, num*100./tot)
+        if num:
+            print "\t%s: %d (%5.2f%%)" % (char, num, num*100./tot)
+        else:
+            print '\taltri: 0 (0.00%)'
+            break # non ne vale la pena
 
 if __name__ == '__main__':
     from sys import argv, stdin
