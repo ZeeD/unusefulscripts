@@ -40,3 +40,4 @@ fi
 out="$(mktemp -t dotdisplay-XXXXXX)"
 "${DOT}" -Tsvg -o "${out}" "${1}" && svgdisplay "${out}" >/dev/null
 rm "${out}"
+

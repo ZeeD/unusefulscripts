@@ -151,7 +151,7 @@ def validate_values(input_string):
 def plot(function, x_values, y_values):
     for y in y_values:
         for x in x_values:
-            print "%3d" % function(x, y),
+            print "%4d" % function(x, y),
         print
 
 def main():
