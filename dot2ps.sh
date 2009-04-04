@@ -1,13 +1,13 @@
 #!/bin/sh
 
+source utilities.sh # check_requirements
+
 if [ -z "${@}" ]; then
     echo "Uso: ${0} [f] file.dot [files]" >&2
     exit 1
 fi
 
-if ! check_requirements.sh dot; then
-    exit -1
-fi
+check_requirements dot
 
 if [ "${1}" == "f" ]; then
     force="1"
