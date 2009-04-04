@@ -1,15 +1,6 @@
 #!/bin/sh
 
-# 2008-07-29 - Introduzione di check_requirements.sh
-# 2008-06-03 - Piccole modifiche:
-#   * formula a tutta pagina ($$_$$ invece che $_$)
-#   * sfondo bianco
-#   * supporto di un nome di file di output
-#   * TODO: ritaglio più accurato   ->  done
-#   * TODO: supporto alle opzioni
-#   * TODO: supporto automagico alla visualizzazione
-#   * TODO: in questo caso, supporto automagico all'autodistruzione
-# 2007-??-?? - Versione iniziale
+source utilities.sh # check_requirements
 
 if [ -z "${1}" -o -n "${3}" ]; then
     echo "Uso: ${0} FORMULA [NOMEFILE]" >&2
@@ -19,9 +10,7 @@ elif [ -e "${1}.png" ]; then
     exit 2
 fi
 
-if ! check_requirements.sh pwd mktemp latex dvipng; then
-    exit -1
-fi
+check_requirements pwd mktemp latex dvipng
 
 homeDir="$(pwd)"
 cd "$(mktemp -dt tex2png-XXXXXX)"

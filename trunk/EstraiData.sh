@@ -1,5 +1,7 @@
 #!/bin/sh
 
+source utilities.sh # check_requirements
+
 echo "TODO: cercare di farne una versione python" >&2
 
 if [ -z "${1}" ]; then
@@ -7,9 +9,7 @@ if [ -z "${1}" ]; then
     echo "Rinomina ogni immagine con la propria timestamp" >&2
 fi
 
-if ! check_requirements.sh exiv2 grep cut mv; then
-    exit -1
-fi
+check_requirements exiv2 grep cut mv
 
 for from in "${@}"; do
     timestamp="$(exiv2 "$from" 2>/dev/null | grep timestamp | cut -c19-37)"
