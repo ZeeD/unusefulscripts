@@ -11,12 +11,13 @@ def rotate(istream=stdin, ostream=stdout, iencoding='utf8', oencoding='utf8'):
     """
     matrix = [row.decode(iencoding)[:-1] for row in istream.readlines()]
     for i in range(max(len(row) for row in matrix)-1, -1, -1):
+        buffer = []
         for row in matrix:
             try:
-                ostream.write(row[i].encode(oencoding))
+                buffer.append(row[i])
             except IndexError:
-                ostream.write(' '.encode(oencoding))
-        ostream.write('\n')
+                buffer.append(' ')
+        ostream.write('%s\n' % ''.join(buffer).encode(oencoding).rstrip())
 
 if __name__ == '__main__':
     from sys import argv
