@@ -26,11 +26,50 @@ def do_rename(mapping):
     for date in sorted(mapping):
         print "Now I'm gonna mv `%s` to `%s'" % (mapping[date], date)
 
+def heuristic_by_date((a, b)):
+    """Default heuristic, group by date"""
+    return a.date()
+
+class make_heuristic_by_hour_distance(object):
+    """Cool heuristic: group if a was made at most max_hour_interval before b"""
+    def __init__(self, max_hour_interval=12):
+        from datetime import timedelta
+        self.timedelta = timedelta(hours=max_hour_interval)
+        self.returnValue = True
+
+    def __call__(self, (a, b)):
+        if (b-a) < self.timedelta:
+            return self.returnValue
+        else:
+            self.returnValue = not self.returnValue
+            return not self.returnValue
+
+def group_by(iterable, grouper):
+    """*wrong* wrapper around itertools.groupby"""
+    from itertools import groupby, tee, izip
+    a, b = tee(iterable)
+    next(b)
+    return ((g[0] for g in e[1]) for e in groupby(izip(a, b), grouper))
+
+def extract_prefix(list_of_datetimes):
+    """Extract a prefix, the kind of YYYY-MM-DD+(DD+1)+...
+    *YEAH*, it doesn't support sequences between 2 different months, so what?"""
+    date = list_of_datetimes.next() # cry if list_of_datetimes is empty
+    ret = [ date.strftime('%Y-%m-%d') ]
+    for next_date in list_of_datetimes:
+        assert next_date.day <= date.day + 1
+        if next_date.day != date.day:
+            ret.append(next_date.strftime('+%d'))
+            date = next_date
+    return ''.join(ret)
+
 def main(options, args):
-    mapping = {}
-    for param in args:
-        mapping[extract_date(param)] = param
-    do_rename(mapping)
+    if options.heuristic:
+        heuristic = make_heuristic_by_hour_distance()
+    else:
+        heuristic = heuristic_by_date
+    for e in group_by(sorted(map(extract_date, args)), heuristic):
+        print extract_prefix(e), ', '.join(map(str, e))
 
 def parse_options():
     """Parse user options
