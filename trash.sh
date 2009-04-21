@@ -25,3 +25,4 @@ if [ "${1}" = '-i' ]; then
 else
     kfmclient --noninteractive move "${@}" 'trash:/'
 fi
+
