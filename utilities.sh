@@ -23,15 +23,24 @@ function join_() {
 }
 
 function in_() {
-    # uso in_ SEARCHED_ELEMENT [ELEMENTS]
+    # uso in_ [-q] SEARCHED_ELEMENT [ELEMENTS]
     # porting in bash della keyword in del python
-    searched_element="${1}"
-    shift
+    if [ "${1}" = '-q' ]; then
+        QUIET=true
+        searched_element="${2}"
+        shift 2
+    else
+        QUIET=false
+        searched_element="${1}"
+        shift
+    fi
     for element in "${@}"; do
         if [ "${searched_element}" = "${element}" ]; then
-            echo "${searched_element}"
-            break
+            if ! "${QUIET}"; then
+                echo "${searched_element}"
+            fi
+            return 0
         fi
     done
+    return 1
 }
-
