@@ -46,6 +46,7 @@ def main(options, args):
         if not options.test:
             with codecs_open(infilename, encoding=encoding) as infile:
                 with codecs_open(outfilename, 'wb', encoding='utf8') as outfile:
+                    # TODO: remove the CRLF!!!
                     outfile.write(infile.read())
 
 if __name__ == '__main__':
