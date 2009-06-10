@@ -99,9 +99,7 @@ def main(options, args):
                 rename(mdo.filename, filename)
 
 def parse_options():
-    """Parse user options
-    return options, args (== OptionParser(...).parse_args())
-    """
+    """Create an OptionParser istance, add the user options and return it"""
     parser = OptionParser(version='%prog 0.1', usage='%prog [OPTIONS] PHOTOS')
     parser.add_option('-d', '--group-in-directories', action='store_true',
             default=False, help='group images in directories, once per day')

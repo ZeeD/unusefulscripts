@@ -89,7 +89,7 @@ def main():
         nome_directory = basename(abspath(curdir))
     formato = (' - %%.%dd' if options.use_dirname else '%%.%dd - ') % max_length
 
-    for sorgente, intero in associa.items():
+    for sorgente, intero in sorted(associa.items()):
         if options.use_dirname:
             ext = splitext(sorgente)[1] # NB: be sure there is an extension!
             destinazione = nome_directory + formato % intero + ext
