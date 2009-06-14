@@ -5,6 +5,14 @@ from optparse import OptionParser
 from os import rename
 from os.path import exists, basename, dirname, join, abspath, splitext
 
+os_path_splitext = splitext
+def splitext(pathname, exts=('.tar.gz', )):
+    '''Wrap os.path.splitext() to know strange extensions (like .tar.gz)'''
+    for ext in exts:
+        if pathname.endswith(ext):
+            return pathname.split(ext)[0], ext
+    return os_path_splitext(pathname)
+
 def number_len(i):
     """Calcola il numero di cifre necessarie per un numero in una certa base"""
     return len(str(int(i)))
