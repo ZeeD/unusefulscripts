@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''Little stupid program that rotate a stream of 90°, 180° or 270°'''
+'''Little stupid program that rotate a text stream of 90°, 180° or 270°'''
 
 def rotate(istream, ostream, iencoding='utf8', oencoding='utf8'):
     """Dato uno stream di caratteri in input, lo consuma tutto, e scrive sullo
