@@ -18,8 +18,10 @@ class MetaData(object):
         self.filename = image_filename
         tag = MetaData._supported_tags[tagname]
         assert ExifTags.TAGS[tag] == tagname # maybe it's changed...
-        self.datetime = datetime.strptime(
-                Image.open(image_filename)._getexif()[tag], '%Y:%m:%d %H:%M:%S')
+        exiftags = Image.open(image_filename)._getexif()
+        if not exiftags:
+            raise StandardError("%s: No exif tags found" % image_filename)
+        self.datetime = datetime.strptime(exiftags[tag], '%Y:%m:%d %H:%M:%S')
         dirname, basename = split(self.filename)
         basename, ext = splitext(basename)
         self.split = dirname, basename, ext
@@ -80,8 +82,13 @@ def main(options, args):
     else:
         heuristic = heuristic_by_date
     # mdos -> MetaData ObjectS
-    for mdos in group_by(sorted(map(MetaData, args), key=lambda i: i.datetime),
-            heuristic):
+    mdoss = []
+    for arg in args:
+        try:
+            mdoss.append(MetaData(arg))
+        except Exception as e:
+            print "%s: %s" % (arg, e)
+    for mdos in group_by(sorted(mdoss, key=lambda i: i.datetime), heuristic):
         mdos1, mdos2 = tee(mdos)
         common_prefix = get_common_prefix(mdo.datetime for mdo in mdos1)
         for mdo in mdos2:

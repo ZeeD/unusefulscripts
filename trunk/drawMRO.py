@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os, itertools
 
@@ -15,20 +16,19 @@ def if_(cond, e1, e2=''):
         return e2
 
 def MRO(cls):
-    "Returns the MRO of cls as a text"
-    out = ["MRO of %s:" % cls.__name__]
+    """Returns the MRO of cls as a text"""
+    out = [ "MRO of %s:" % cls.__name__ ]
     for counter, c in enumerate(cls.__mro__):
-        name = c.__name__
-        bases = ','.join([b.__name__ for b in c.__bases__])
-        s = "  %s - %s(%s)" % (counter, name, bases)
+        bases = ','.join(b.__name__ for b in c.__bases__)
+        s = "    %s - %s(%s)" % (counter, c.__name__, bases)
         if type(c) is not type:
             s += "[%s]" % type(c).__name__
         out.append(s)
     return '\n'.join(out)
 
 class MROgraph(object):
+    """Generates the MRO graph of a set of given classes"""
     def __init__(self, *classes, **options):
-        "Generates the MRO graph of a set of given classes."
         if not classes:
             raise "Missing class argument!"
         filename = options.get('filename', "MRO_of_%s.ps" % classes[0].__name__)
@@ -36,10 +36,11 @@ class MROgraph(object):
         caption = options.get('caption', False)
         setup = options.get('setup', '')
         name, dotformat = os.path.splitext(filename)
-        format = dotformat[1:]
-        viewer = if_(format=='ps', PSVIEWER, PNGVIEWER)
-        self.textrepr = '\n'.join([MRO(cls) for cls in classes])
-        caption = if_(caption, 'caption [shape=box,label="%s\n",fontsize=9];' % self.textrepr).replace('\n','\\l')
+        viewer = PSVIEWER if dotformat == '.ps' else PNGVIEWER
+        self.textrepr = '\n'.join(MRO(cls) for cls in classes)
+        if not caption:
+            caption = 'caption [shape=box,label="%s\n",fontsize=9];' % self.textrepr
+        caption.replace('\n','\\l')
         setupcode = caption + '\n' + setup + '\n'
         codeiter = itertools.chain(*[self.genMROcode(cls) for cls in classes])
         self.dotcode = 'digraph %s{\n%s%s}' % (name, setupcode,
