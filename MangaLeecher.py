@@ -26,18 +26,18 @@ def start_chapter(options):
         using the --start-chapter and a mix of --out-dir and --cbt options'''
     from os import listdir
     end = '.cbt' if options.cbt else '.jpg'
-    entries = listdir(options.out_dir)
+    entries = sorted(f for f in listdir(options.out_dir) if f.endswith(end))
     if not entries:
-        last_chapter = '0'
+        last_chapter = 0
     else:
-        last_fn = sorted(f for f in entries if f.endswith(end))[-1]
+        last_fn = entries[-1]
         if options.cbt:
-            last_chapter = last_fn.split(' - ')[-1][:-4]
+            last_chapter = int(last_fn.split(' - ')[-1][:-4])
         else:
-            last_chapter = last_fn.split(' - ')[-2]
-    if int(options.start_chapter) > int(last_chapter):
+            last_chapter = int(last_fn.split(' - ')[-2])
+    if int(options.start_chapter) > last_chapter:
         return options.start_chapter
-    return str(int(last_chapter)+1)
+    return str(last_chapter+1)
 
 def leech(manga, options):
     '''Download all manga pages
