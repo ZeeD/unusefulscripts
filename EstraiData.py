@@ -62,12 +62,19 @@ def get_common_prefix(list_of_datetimes):
     return ''.join(ret)
 
 def new_file(metadata_object, common_prefix, options):
+    from re import search
     dirname, basename, ext = metadata_object.split
-    hh_mm_ss = metadata_object.datetime.strftime('%T')
-    if options.group_in_directories:
-        central_part = join(common_prefix, hh_mm_ss)
+    # FIX: se common_prefix è della forma DD+(DD), vorrò avere come nome file
+    # "DD hh_mm_ss.jpg", e non solo 'hh_mm_ss.jpg'
+    if search('\+\d{2}$', common_prefix):
+        filename = metadata_object.datetime.strftime('%d %T')
     else:
-        central_part = common_prefix + ' ' + hh_mm_ss
+        filename = metadata_object.datetime.strftime('%T')
+
+    if options.group_in_directories:
+        central_part = join(common_prefix, filename)
+    else:
+        central_part = common_prefix + ' ' + filename
     if options.preserve_filename:
         central_part += ' - ' + basename
     return join(dirname, central_part) + ext
