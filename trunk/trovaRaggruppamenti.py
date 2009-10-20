@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+format_string = "%s * %s == %s == %s + %s"
+
 def raggruppamenti(pagine_totali):
     """FIXME: Shlemiel the painter's algorithm! (my pc is fast enougth -.-)"""
     pagine_per_raggruppamento = 0
@@ -34,9 +36,8 @@ def print_output(headers, format, pagine_totali, show_all=False):
             print_one_row(headers_l, format, pagine_totali,
                     pagine_per_raggruppamento, numero_raggruppamenti)
 
-if __name__ == '__main__':
+def main():
     from optparse import OptionParser
-    from pyPdf import PdfFileReader
     parser = OptionParser(version='%prog 0.4.0', usage='''%prog [PDF|NUMERO]...
         Genera le possibili combinazioni per stampare NUMERO pagine
         (eventualmente estratte dal PDF)''')
@@ -46,7 +47,6 @@ if __name__ == '__main__':
 
     headers = ("pagine_per_raggruppamento", "numero_raggruppamenti",
             "pagine_stampate", "pagine_totali", "bianche")
-    format_string = "%s * %s == %s == %s + %s"
 
     if not args:
         raise SystemExit(parser.print_usage())
@@ -56,6 +56,7 @@ if __name__ == '__main__':
         try:
             pagine_totali = int(arg)
         except ValueError:
+            from pyPdf import PdfFileReader # not needed if arg is a number
             try:
                 pagine_totali = PdfFileReader(file(arg, "rb")).numPages
             except:
@@ -63,3 +64,6 @@ if __name__ == '__main__':
                 raise RuntimeWarning("`%s' non è né un numero né un pdf!" % arg)
         if not warn:
             print_output(headers, format_string, pagine_totali, options.all)
+
+if __name__ == '__main__':
+    main()
