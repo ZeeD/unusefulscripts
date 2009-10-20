@@ -7,7 +7,7 @@ def analizza(pagina):
     # WARN: very black magik - la sto scrivendo e non so quel che fa
     return ''.join(BeautifulSoup(urlopen(
             'http://www.televideo.rai.it/televideo/pub/catturaSottopagine.jsp?'
-            'pagina=%d' % pagina).read())('pre')[0].contents[5:20:7]) # 5,12,19
+            'pagina=%d' % pagina, timeout=3).read())('pre')[0].contents[5:20:7]) # 5,12,19
 
 def cli(page):
     from curses import initscr, error, endwin, KEY_DOWN, KEY_UP

@@ -50,6 +50,7 @@ def leech(manga, options):
     from tempfile import mkdtemp
     from tarfile import open as taropen
     from shutil import rmtree
+    from atexit import register
     chapter = start_chapter(options)
     while True:
         soup = BeautifulSoup(urlopen('http://www.onemanga.com/%s/%s/' %
@@ -60,6 +61,7 @@ def leech(manga, options):
                 soup('a')[-3].attrs[0][1]).read())
         if options.cbt:
             tmpdir = mkdtemp()
+            register(lambda:rmtree(tmpdir))
         if options.verbose:
             stdout.write('Downloading chapter %s' % chapter)
             stdout.flush()
@@ -86,7 +88,6 @@ def leech(manga, options):
             tar_file = taropen(tar_filename, 'w:gz')
             tar_file.add(tmpdir)
             tar_file.close()
-            rmtree(tmpdir)
         chapter = str(int(chapter) + 1)
         if options.verbose:
             stdout.write('\n')
