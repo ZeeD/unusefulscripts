@@ -5,7 +5,7 @@
     Designed to download all manga pages of a manga for an off-line read :)
 '''
 
-from urllib2 import urlopen
+from urllib2 import urlopen, URLError
 from BeautifulSoup import BeautifulSoup
 
 def list_chapters(manga):
@@ -46,12 +46,16 @@ def leech(manga, options):
         @outdir the directory where the files where downloaded
     '''
     from os.path import join
-    from sys import stdout
+    from sys import stdout,stderr
     from tempfile import mkdtemp
     from tarfile import open as taropen
     from shutil import rmtree
     from atexit import register
+    from httplib import BadStatusLine
     chapter = start_chapter(options)
+    if options.cbt:
+        tmpdirs = []
+        register(lambda:[rmtree(tmpdir) for tmpdir in tmpdirs])
     while True:
         soup = BeautifulSoup(urlopen('http://www.onemanga.com/%s/%s/' %
                 (manga, chapter)).read())
@@ -60,33 +64,38 @@ def leech(manga, options):
         soup = BeautifulSoup(urlopen('http://www.onemanga.com%s' %
                 soup('a')[-3].attrs[0][1]).read())
         if options.cbt:
-            tmpdir = mkdtemp()
-            register(lambda:rmtree(tmpdir))
+            tmpdirs.append(mkdtemp())
         if options.verbose:
             stdout.write('Downloading chapter %s' % chapter)
             stdout.flush()
-        for option in soup('select',attrs={'id':'id_page_select'})[0]('option'):
-            page = option.attrs[0][1]
-            soup = BeautifulSoup(urlopen('http://www.onemanga.com/%s/%s/%s' %
-                    (manga, chapter, page)).read())
-            img = soup('div', attrs={'class': 'one-page'})[0]('img')[0]
-            imagelink = dict(img.attrs)['src']
-            if options.cbt:
-                filename = join(tmpdir, IMG_FORMAT % (manga, chapter, page))
-            else:
-                filename = join(options.out_dir,IMG_FORMAT%(manga,chapter,page))
-            with open(filename, 'w') as outfile:
-                outfile.write(urlopen(imagelink).read())
-            if options.verbose:
-                stdout.write('.')
-                stdout.flush()
+        opts = soup('select',attrs={'id':'id_page_select'})[0]('option')
+        for option in opts:
+            try:
+                page = option.attrs[0][1]
+                soup = BeautifulSoup(urlopen('http://www.onemanga.com/%s/%s/%s'%
+                        (manga, chapter, page)).read())
+                img = soup('div', attrs={'class': 'one-page'})[0]('img')[0]
+                imagelink = dict(img.attrs)['src']
+                if options.cbt:
+                    filename = join(tmpdirs[-1], IMG_FORMAT % (manga, chapter, page))
+                else:
+                    filename = join(options.out_dir, IMG_FORMAT %
+                            (manga,chapter,page))
+                with open(filename, 'w') as outfile:
+                    outfile.write(urlopen(imagelink).read())
+                if options.verbose:
+                    stdout.write('.')
+                    stdout.flush()
+            except BadStatusLine, URLError:
+                stderr.write("Error on manga=%s, chapter=%s, page=%s\n" % (manga, chapter, page))
+                opts.append(option)
         if options.cbt:
             tar_filename = join(options.out_dir, CBT_FORMAT % (manga, chapter))
             if options.verbose:
                 stdout.write('Compressing')
                 stdout.flush()
             tar_file = taropen(tar_filename, 'w:gz')
-            tar_file.add(tmpdir)
+            tar_file.add(tmpdirs[-1])
             tar_file.close()
         chapter = str(int(chapter) + 1)
         if options.verbose:
