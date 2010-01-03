@@ -6,13 +6,13 @@ from os.path import split, splitext, join, isdir
 import ExifTags
 import Image
 from itertools import groupby, tee, izip_longest
-from optparse import OptionParser
+from optparse import OptionParser, SUPPRESS_HELP
 from os import mkdir, rename
 
 class MetaData(object):
     _supported_tags = { 'DateTime': 306, 'DateTimeOriginal': 36867,
             'DateTimeDigitized': 36868 }
-    def __init__(self, image_filename, tagname='DateTime'):
+    def __init__(self, image_filename, tagname):
         """construct a datetime object from the exif information stored into the
         image which is named image_filename"""
         self.filename = image_filename
@@ -56,10 +56,30 @@ def get_common_prefix(list_of_datetimes):
     ret = [ date.strftime('%F') ]
     for next_date in list_of_datetimes:
         assert next_date.day <= date.day + 1
-        if next_date.day != date.day:
+        if next_date.year != date.year:
+            ret.append(next_date.strftime('+%Y-%m-%d'))
+        elif next_date.month != date.month:
+            ret.append(next_date.strftime('+%m-%d'))
+        elif next_date.day != date.day:
             ret.append(next_date.strftime('+%d'))
-            date = next_date
+        date = next_date
     return ''.join(ret)
+
+def test_get_common_prefix():
+    f = get_common_prefix
+    i_es = (
+            (iter([datetime(2009,11,29), datetime(2009,11,30)]),
+                    '2009-11-29+30'),
+            (iter([datetime(2009,11,29), datetime(2009,11,29),
+                            datetime(2009,11,30), datetime(2009,12,1),
+                            datetime(2009,12,2)]),
+                    '2009-11-29+30+12-01+02'),
+            (iter([datetime(2009,12,31),datetime(2010,1,1)]),
+                    '2009-12-31+2010-01-01')
+    )
+    for i, e in i_es:
+        o = f(i)
+        assert o == e, "%s(%s) == %s != %s" % (f.func_name, i, o, e)
 
 def new_file(metadata_object, common_prefix, options):
     from re import search
@@ -92,9 +112,9 @@ def main(options, args):
     mdoss = []
     for arg in args:
         try:
-            mdoss.append(MetaData(arg))
+            mdoss.append(MetaData(arg, options.key))
         except Exception as e:
-            print "%s: %s" % (arg, e)
+            print "%s: %s %s" % (arg, e, type(e))
     for mdos in group_by(sorted(mdoss, key=lambda i: i.datetime), heuristic):
         mdos1, mdos2 = tee(mdos)
         common_prefix = get_common_prefix(mdo.datetime for mdo in mdos1)
@@ -125,11 +145,27 @@ def parse_options():
             help="test only: doesn't actually rename anything")
     parser.add_option('-v', '--verbose', action='store_true', default=False,
             help='show on STDOUT what happens')
+    parser.add_option('-k', '--key', action='store', default='DateTime',
+            type=str, help='use KEY to extract date from the image '
+                    '(default=%default, available=' +
+                    unicode(MetaData._supported_tags.keys()) + ')')
+    parser.add_option('--unit-test', action='store_true', help=SUPPRESS_HELP)
     return parser
+
+def do_tests():
+    try:
+        test_get_common_prefix()
+    except AssertionError as e:
+        print(e)
+    else:
+        print('No errors!')
+
 
 if __name__ == '__main__':
     parser = parse_options()
     options, args = parser.parse_args()
+    if options.unit_test:
+        raise SystemExit(do_tests())
     if not args:
         raise SystemExit(parser.print_usage())
     main(options, args)
