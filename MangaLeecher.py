@@ -5,8 +5,22 @@
     Designed to download all manga pages of a manga for an off-line read :)
 '''
 
+IMG_EXT = '.jpg'
+CBT_EXT = '.cbt'
+IMG_FORMAT = '%s - %s - %s' + IMG_EXT # MANGA - CHAPTER - PAGE.jpg
+CBT_FORMAT = '%s - %s' + CBT_EXT      # MANGA - CHAPTER.cbt
+
 from urllib2 import urlopen, URLError
+from os import listdir
 from BeautifulSoup import BeautifulSoup
+from os.path import join
+from sys import stdout,stderr
+from tempfile import mkdtemp
+from tarfile import open as taropen
+from shutil import rmtree
+from atexit import register
+from httplib import BadStatusLine
+from optparse import OptionParser
 
 def list_chapters(manga):
     '''Show on STDOUT the list of the avalable chapters of the manga
@@ -18,14 +32,10 @@ def list_chapters(manga):
         contents.append(td.contents[0].contents[0])
     return '\n'.join(reversed(contents))
 
-IMG_FORMAT = '%s - %s - %s.jpg' # MANGA - CHAPTER - PAGE.jpg
-CBT_FORMAT = '%s - %s.cbt'      # MANGA - CHAPTER.cbt
-
 def start_chapter(options):
     '''Find the initial chapter to download
         using the --start-chapter and a mix of --out-dir and --cbt options'''
-    from os import listdir
-    end = '.cbt' if options.cbt else '.jpg'
+    end = CBT_EXT if options.cbt else IMG_EXT
     entries = sorted(f for f in listdir(options.out_dir) if f.endswith(end))
     if not entries:
         last_chapter = 0
@@ -39,28 +49,27 @@ def start_chapter(options):
         return options.start_chapter
     return str(last_chapter+1)
 
+from sys import stderr
+
 def leech(manga, options):
     '''Download all manga pages
         @param manga the name of the manga
         @start_chapter start downloading from this chapter
         @outdir the directory where the files where downloaded
     '''
-    from os.path import join
-    from sys import stdout,stderr
-    from tempfile import mkdtemp
-    from tarfile import open as taropen
-    from shutil import rmtree
-    from atexit import register
-    from httplib import BadStatusLine
     chapter = start_chapter(options)
     if options.cbt:
         tmpdirs = []
         register(lambda:[rmtree(tmpdir) for tmpdir in tmpdirs])
     while True:
+        if options.debug:
+            stderr.write('urlopen(http://www.onemanga.com/%s/%s)\n' % (manga, chapter))
         soup = BeautifulSoup(urlopen('http://www.onemanga.com/%s/%s/' %
                 (manga, chapter)).read())
         if len(soup('p')) == 2:
             break   # chapter not existent
+        if options.debug:
+            stderr.write('urlopen(http://www.onemanga.com%s)\n' % soup('a')[-3].attrs[0][1])
         soup = BeautifulSoup(urlopen('http://www.onemanga.com%s' %
                 soup('a')[-3].attrs[0][1]).read())
         if options.cbt:
@@ -104,7 +113,6 @@ def leech(manga, options):
 
 def main():
     '''"main" function'''
-    from optparse import OptionParser
     parser = OptionParser(version='%prog 0.1.5', usage='''%prog [OPTS] MANGA
         Scarica le immagini dei capitoli di MANGA from www.onemanga.com''')
     parser.add_option('-z', '--cbt', action='store_true',
@@ -117,6 +125,7 @@ def main():
             help='Non scaricare nulla: invece mostra i capitoli disponibili')
     parser.add_option('-c', '--start-chapter', type=str, default='1',
             metavar='N', help='Inizia a scaricare dal capitolo N')
+    parser.add_option('--debug', action='store_true', help=u'Modalità debug')
     # TODO: add an option to create a subdir named MANGA
     options, args = parser.parse_args()
     if not args:

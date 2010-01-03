@@ -101,7 +101,7 @@ def unwalla_file(input_file_name, options):
 def warn(string, args=(), fatal=False):
     '''Warning / Error message generator'''
     from sys import stderr
-    stderr.write("%s:`%s'\n" % ("Error" if fatal else "Warning", string % args))
+    stderr.write("%s: %s\n" % ("Error" if fatal else "Warning", string % args))
     if fatal:
         raise SystemExit(fatal)
 

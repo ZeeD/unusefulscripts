@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 class Tape(object):
     def __init__(self, _list=None, position=0):
         if _list is None:
             self.right_list = []
         else:
-            self.right_list = _list
-        self.position = position
+            self.right_list = list(_list)
+        self.position = int(position)
         self.left_list = []
 
     def move_right(self):
@@ -15,31 +16,25 @@ class Tape(object):
     def move_left(self):
         self.position -= 1
 
-    def read(self):
+    def _list_pos(self):
         if self.position >= 0:
-            try:
-                return self.right_list[self.position]
-            except IndexError:
-                self.right_list.append(None)
-                return None
-        else:
-            try:
-                return self.left_list[-self.position-1]
-            except IndexError:
-                self.left_list.append(None)
-                return None
+            return self.right_list, self.position
+        return self.left_list, -self.position - 1
+
+    def read(self):
+        list_, pos = self._list_pos()
+        try:
+            return list_[pos]
+        except IndexError:
+            list_.append(None)
+            return None
 
     def write(self, value):
-        if self.position >= 0:
-            try:
-                self.right_list[self.position] = value
-            except IndexError:
-                self.right_list.append(value)
-        else:
-            try:
-                self.left_list[-self.position-1] = value
-            except IndexError:
-                self.left_list.append(value)
+        list_, pos = self._list_pos()
+        try:
+            list_[pos] = value
+        except IndexError:
+            list_.append(value)
 
     def __str__(self):
         return  ', '.join(str(el) if i != self.position else "[%s]" % str(el)
