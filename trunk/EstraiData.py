@@ -8,6 +8,7 @@ import Image
 from itertools import groupby, tee, izip_longest
 from optparse import OptionParser, SUPPRESS_HELP
 from os import mkdir, rename
+from subprocess import Popen, PIPE
 
 class MetaData(object):
     _supported_tags = { 'DateTime': 306, 'DateTimeOriginal': 36867,
@@ -20,8 +21,19 @@ class MetaData(object):
         assert ExifTags.TAGS[tag] == tagname # maybe it's changed...
         exiftags = Image.open(image_filename)._getexif()
         if not exiftags:
-            raise StandardError("%s: No exif tags found" % image_filename)
+            raise StandardError('%s: No exif tags found' % self.filename)
         self.datetime = datetime.strptime(exiftags[tag], '%Y:%m:%d %H:%M:%S')
+        dirname, basename = split(self.filename)
+        basename, ext = splitext(basename)
+        self.split = dirname, basename, ext
+
+class MovMetaData(MetaData):
+    """Support for exif tags in .mov files"""
+    def __init__(self, mov_filename, tagname):  # tagname is ignored.
+        self.filename = mov_filename
+        stdout = Popen(('exiftool', '-CreateDate', '-b', self.filename),
+                stdout=PIPE).communicate()[0]
+        self.datetime = datetime.strptime(stdout, '%Y:%m:%d %H:%M:%S')
         dirname, basename = split(self.filename)
         basename, ext = splitext(basename)
         self.split = dirname, basename, ext
@@ -112,7 +124,11 @@ def main(options, args):
     mdoss = []
     for arg in args:
         try:
-            mdoss.append(MetaData(arg, options.key))
+            if arg.endswith('.mov'):
+                mdo = MovMetaData(arg, None)
+            else:
+                mdo = MetaData(arg, options.key)
+            mdoss.append(mdo)
         except Exception as e:
             print "%s: %s %s" % (arg, e, type(e))
     for mdos in group_by(sorted(mdoss, key=lambda i: i.datetime), heuristic):
