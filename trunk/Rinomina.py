@@ -31,8 +31,13 @@ def sort_images(image_file_name):
     --> abs(x-y) deve -> 0 positivamente --> -abs(x-y) deve -> 0 negativame (e
     più grande è meglio è)
     A parità di diagonale, sono uguali :P'''
-    im_x, im_y = im_open(image_file_name).size
-    return (im_x*im_y, -abs(im_x-im_y))
+    try:
+        im_x, im_y = im_open(image_file_name).size
+    except Exception as e:
+        print(image_file_name)
+        raise e
+    else:
+        return (im_x*im_y, -abs(im_x-im_y))
 
 def mkparser():
     '''create and return an OptionParser instance with all options added'''

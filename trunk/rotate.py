@@ -68,5 +68,4 @@ def check_args(args):
 if __name__ == '__main__':
     OPTIONS, ARGS = parse_options()
     ISTREAM, OSTREAM = check_args(ARGS)
-    rotate(ISTREAM, OSTREAM, OPTIONS.iencoding, OPTIONS.oencoding,
-            OPTIONS.rotate)
+    rotate(ISTREAM, OSTREAM, OPTIONS.iencoding, OPTIONS.oencoding)

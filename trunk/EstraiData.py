@@ -131,6 +131,10 @@ def main(options, args):
             mdoss.append(mdo)
         except Exception as e:
             print "%s: %s %s" % (arg, e, type(e))
+    if options.extract_only:
+        for mdo in mdoss:
+            print "%s:\t%s" % (mdo.filename, mdo.datetime)
+        return
     for mdos in group_by(sorted(mdoss, key=lambda i: i.datetime), heuristic):
         mdos1, mdos2 = tee(mdos)
         common_prefix = get_common_prefix(mdo.datetime for mdo in mdos1)
@@ -166,6 +170,8 @@ def parse_options():
                     '(default=%default, available=' +
                     unicode(MetaData._supported_tags.keys()) + ')')
     parser.add_option('--unit-test', action='store_true', help=SUPPRESS_HELP)
+    parser.add_option('-x', '--extract-only', action='store_true',
+            default=False, help="just show the exif date of the images")
     return parser
 
 def do_tests():
@@ -175,7 +181,6 @@ def do_tests():
         print(e)
     else:
         print('No errors!')
-
 
 if __name__ == '__main__':
     parser = parse_options()
