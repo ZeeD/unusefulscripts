@@ -10,7 +10,10 @@ CBT_EXT = '.cbt'
 IMG_FORMAT = '%s - %s - %s' + IMG_EXT # MANGA - CHAPTER - PAGE.jpg
 CBT_FORMAT = '%s - %s' + CBT_EXT      # MANGA - CHAPTER.cbt
 
-from urllib2 import urlopen, URLError
+BASEURL = 'www.onemanga.com'
+BASEURL_1000 = 'www.1000manga.com'
+
+from urllib2 import urlopen, URLError, HTTPError
 from os import listdir
 from BeautifulSoup import BeautifulSoup
 from os.path import join
@@ -27,7 +30,7 @@ def list_chapters(manga):
         @param manga the name of the manga
     '''
     contents = []
-    soup = BeautifulSoup(urlopen('http://www.onemanga.com/%s/' % manga).read())
+    soup = BeautifulSoup(urlopen('http://%s/%s/' % (BASEURL, manga)).read())
     for td in soup(name='td', attrs={'class': 'ch-subject'}):
         contents.append(td.contents[0].contents[0])
     return '\n'.join(reversed(contents))
@@ -57,36 +60,49 @@ def leech(manga, options):
         @start_chapter start downloading from this chapter
         @outdir the directory where the files where downloaded
     '''
+    global BASEURL
     chapter = start_chapter(options)
     if options.cbt:
         tmpdirs = []
         register(lambda:[rmtree(tmpdir) for tmpdir in tmpdirs])
     while True:
         if options.debug:
-            stderr.write('urlopen(http://www.onemanga.com/%s/%s)\n' % (manga, chapter))
-        soup = BeautifulSoup(urlopen('http://www.onemanga.com/%s/%s/' %
-                (manga, chapter)).read())
+            stderr.write('urlopen(http://%s/%s/%s)\n' %
+                    (BASEURL, manga, chapter))
+        soup = BeautifulSoup(urlopen('http://%s/%s/%s' %
+                (BASEURL, manga, chapter)).read())
         if len(soup('p')) == 2:
             break   # chapter not existent
         if options.debug:
-            stderr.write('urlopen(http://www.onemanga.com%s)\n' % soup('a')[-3].attrs[0][1])
-        soup = BeautifulSoup(urlopen('http://www.onemanga.com%s' %
-                soup('a')[-3].attrs[0][1]).read())
+            stderr.write('urlopen(http://%s%s)\n' %
+                    (BASEURL, soup('a')[-3].attrs[0][1]))
+        try:
+            soup = BeautifulSoup(urlopen('http://%s%s' %
+                    (BASEURL, soup('a')[-3].attrs[0][1])).read())
+            opts = soup('select',attrs={'id':'id_page_select'})[0]('option')
+        except Exception as e:
+#            import pdb; pdb.set_trace()
+            soup = BeautifulSoup(urlopen('%s' % (soup('a')[-3].attrs[0][1], )).read())
+            firstPage = dict(soup('div',
+                    attrs={'id':'chapter-link'})[0]('a')[0].attrs)['href']
+            BASEURL = BASEURL_1000
+            soup = BeautifulSoup(urlopen('http://%s%s' % (BASEURL, firstPage)).read())
+            opts = soup('select',attrs={'id':'id_page_select'})[0]('option')
         if options.cbt:
             tmpdirs.append(mkdtemp())
         if options.verbose:
             stdout.write('Downloading chapter %s' % chapter)
             stdout.flush()
-        opts = soup('select',attrs={'id':'id_page_select'})[0]('option')
         for option in opts:
             try:
                 page = option.attrs[0][1]
-                soup = BeautifulSoup(urlopen('http://www.onemanga.com/%s/%s/%s'%
-                        (manga, chapter, page)).read())
+                soup = BeautifulSoup(urlopen('http://%s/%s/%s/%s' %
+                        (BASEURL, manga, chapter, page)).read())
                 img = soup('div', attrs={'class': 'one-page'})[0]('img')[0]
                 imagelink = dict(img.attrs)['src']
                 if options.cbt:
-                    filename = join(tmpdirs[-1], IMG_FORMAT % (manga, chapter, page))
+                    filename = join(tmpdirs[-1],
+                            IMG_FORMAT % (manga, chapter, page))
                 else:
                     filename = join(options.out_dir, IMG_FORMAT %
                             (manga,chapter,page))
@@ -95,8 +111,10 @@ def leech(manga, options):
                 if options.verbose:
                     stdout.write('.')
                     stdout.flush()
-            except BadStatusLine, URLError:
-                stderr.write("Error on manga=%s, chapter=%s, page=%s\n" % (manga, chapter, page))
+            except (BadStatusLine, URLError, HTTPError):
+                stderr.write(
+                        "Error on baseurl=%s, manga=%s, chapter=%s, page=%s\n" %
+                        (BASEURL, manga, chapter, page))
                 opts.append(option)
         if options.cbt:
             tar_filename = join(options.out_dir, CBT_FORMAT % (manga, chapter))
@@ -114,7 +132,7 @@ def leech(manga, options):
 def main():
     '''"main" function'''
     parser = OptionParser(version='%prog 0.1.5', usage='''%prog [OPTS] MANGA
-        Scarica le immagini dei capitoli di MANGA from www.onemanga.com''')
+        Scarica le immagini dei capitoli di MANGA from ''' + BASEURL)
     parser.add_option('-z', '--cbt', action='store_true',
             help='Comprimi i capitoli in file .cbt (AKA .tar.gz rinominati)')
     parser.add_option('-v', '--verbose', action='store_true',
