@@ -55,6 +55,10 @@ class make_heuristic_by_hour_distance(object):
             self.returnValue = not self.returnValue
             return not self.returnValue
 
+def heuristic_all_together((a, b)):
+    """'Stupid' heuristic: all images belong to the same group"""
+    return True
+
 def group_by(iterable, grouper):
     """*wrong* wrapper around itertools.groupby"""
     a, b = tee(iterable)
