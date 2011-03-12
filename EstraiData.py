@@ -21,7 +21,7 @@ class MetaData(object):
         assert ExifTags.TAGS[tag] == tagname # maybe it's changed...
         exiftags = Image.open(image_filename)._getexif()
         if not exiftags:
-            raise StandardError('%s: No exif tags found' % self.filename)
+            raise Exception('%s: No exif tags found' % self.filename)
         self.datetime = datetime.strptime(exiftags[tag], '%Y:%m:%d %H:%M:%S')
         dirname, basename = split(self.filename)
         basename, ext = splitext(basename)
@@ -38,8 +38,9 @@ class MovMetaData(MetaData):
         basename, ext = splitext(basename)
         self.split = dirname, basename, ext
 
-def heuristic_by_date((a, b)):
+def heuristic_by_date(xxx_todo_changeme):
     """Default heuristic, group by date"""
+    (a, b) = xxx_todo_changeme
     return a.datetime.date()
 
 class make_heuristic_by_hour_distance(object):
@@ -48,15 +49,17 @@ class make_heuristic_by_hour_distance(object):
         self.timedelta = timedelta(hours=max_hour_interval)
         self.returnValue = True
 
-    def __call__(self, (a, b)):
+    def __call__(self, xxx_todo_changeme1):
+        (a, b) = xxx_todo_changeme1
         if b is None or (b.datetime-a.datetime) < self.timedelta:
             return self.returnValue
         else:
             self.returnValue = not self.returnValue
             return not self.returnValue
 
-def heuristic_all_together((a, b)):
+def heuristic_all_together(xxx_todo_changeme2):
     """'Stupid' heuristic: all images belong to the same group"""
+    (a, b) = xxx_todo_changeme2
     return True
 
 def group_by(iterable, grouper):
@@ -68,7 +71,7 @@ def group_by(iterable, grouper):
 def get_common_prefix(list_of_datetimes):
     """Extract a common_prefix, the kind of YYYY-MM-DD+(DD+1)+...
     *YEAH*, it doesn't support sequences between 2 different months, so what?"""
-    date = list_of_datetimes.next() # cry if list_of_datetimes is empty
+    date = next(list_of_datetimes) # cry if list_of_datetimes is empty
     ret = [ date.strftime('%F') ]
     for next_date in list_of_datetimes:
         assert next_date.day <= date.day + 1
@@ -95,7 +98,7 @@ def test_get_common_prefix():
     )
     for i, e in i_es:
         o = f(i)
-        assert o == e, "%s(%s) == %s != %s" % (f.func_name, i, o, e)
+        assert o == e, "%s(%s) == %s != %s" % (f.__name__, i, o, e)
 
 def new_file(metadata_object, common_prefix, options):
     from re import search
@@ -134,10 +137,10 @@ def main(options, args):
                 mdo = MetaData(arg, options.key)
             mdoss.append(mdo)
         except Exception as e:
-            print "%s: %s %s" % (arg, e, type(e))
+            print("%s: %s %s" % (arg, e, type(e)))
     if options.extract_only:
         for mdo in mdoss:
-            print "%s:\t%s" % (mdo.filename, mdo.datetime)
+            print("%s:\t%s" % (mdo.filename, mdo.datetime))
         return
     for mdos in group_by(sorted(mdoss, key=lambda i: i.datetime), heuristic):
         mdos1, mdos2 = tee(mdos)
@@ -147,12 +150,12 @@ def main(options, args):
                 dirname = new_dir(mdo, common_prefix, options)
                 if not isdir(dirname):
                     if options.verbose:
-                        print 'mkdir %r' % dirname
+                        print('mkdir %r' % dirname)
                     if not options.test:
                         mkdir(dirname)
             filename = new_file(mdo, common_prefix, options)
             if options.verbose:
-                print 'mv %r %r' % (mdo.filename, filename)
+                print('mv %r %r' % (mdo.filename, filename))
             if not options.test:
                 rename(mdo.filename, filename)
 
@@ -172,7 +175,7 @@ def parse_options():
     parser.add_option('-k', '--key', action='store', default='DateTime',
             type=str, help='use KEY to extract date from the image '
                     '(default=%default, available=' +
-                    unicode(MetaData._supported_tags.keys()) + ')')
+                    str(list(MetaData._supported_tags.keys())) + ')')
     parser.add_option('--unit-test', action='store_true', help=SUPPRESS_HELP)
     parser.add_option('-x', '--extract-only', action='store_true',
             default=False, help="just show the exif date of the images")
