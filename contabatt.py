@@ -19,20 +19,20 @@ def main(stream, encoding):
                         d[hand][(char_set, finger)] += 1
                         tot += 1
                         break
-    print "Totale battute: %d" % tot
+    print("Totale battute: %d" % tot)
     for hand in 'sinistra', 'destra':
         tot_hand = sum(d[hand][key] for key in d[hand])
-        print "\tMano %s: %d (%5.2f%%)" % (hand, tot_hand, tot_hand*100./tot)
+        print("\tMano %s: %d (%5.2f%%)" % (hand, tot_hand, tot_hand*100./tot))
         for finger in 'indice', 'medio', 'anulare', 'mignolo':
             tot_finger = d[hand][filter(lambda k: k[1] == finger, d[hand])[0]]
-            print "\t\t%s: %d\t(%5.2f%% mano\t%5.2f%% tot)" % (finger,
-                    tot_finger, tot_finger*100./tot_hand, tot_finger*100./tot)
-    print "Divisione per tasto:"
-    for char, num in sorted(d2.items(), key=lambda e:e[1], reverse=True):
+            print("\t\t%s: %d\t(%5.2f%% mano\t%5.2f%% tot)" % (finger,
+                    tot_finger, tot_finger*100./tot_hand, tot_finger*100./tot))
+    print("Divisione per tasto:")
+    for char, num in sorted(list(d2.items()), key=lambda e:e[1], reverse=True):
         if num:
-            print "\t%s: %d (%5.2f%%)" % (char, num, num*100./tot)
+            print("\t%s: %d (%5.2f%%)" % (char, num, num*100./tot))
         else:
-            print '\taltri: 0 (0.00%)'
+            print('\taltri: 0 (0.00%)')
             break # non ne vale la pena
 
 if __name__ == '__main__':
