@@ -38,6 +38,17 @@ class MovMetaData(MetaData):
         basename, ext = splitext(basename)
         self.split = dirname, basename, ext
 
+class AviMetaData(MetaData):
+    """Support for exif tags in .avi files"""
+    def __init__(self, mov_filename, tagname):  # tagname is ignored.
+        self.filename = mov_filename
+        stdout = Popen(('exiftool', '-DateTimeOriginal', '-b', self.filename),
+                stdout=PIPE).communicate()[0]
+        self.datetime = datetime.strptime(stdout, '%Y:%m:%d %H:%M:%S')
+        dirname, basename = split(self.filename)
+        basename, ext = splitext(basename)
+        self.split = dirname, basename, ext
+
 def heuristic_by_date(xxx_todo_changeme):
     """Default heuristic, group by date"""
     (a, b) = xxx_todo_changeme
@@ -133,6 +144,8 @@ def main(options, args):
         try:
             if arg.endswith('.mov'):
                 mdo = MovMetaData(arg, None)
+            elif arg.endswith('.avi'):
+                mdo = AviMetaData(arg, None)
             else:
                 mdo = MetaData(arg, options.key)
             mdoss.append(mdo)
