@@ -14,10 +14,10 @@ def main():
 
     chars = (char for string in sys.argv[1:] for char in string.decode(fsenc))
 
-    data = ((char, unicodedata.name(char)) for char in chars)
+    data = ((char, ord(char), unicodedata.category(char), unicodedata.name(char)) for char in chars)
 
-    for char, name in data:
-        print u'%s\t%s' % (char, name)
+    for char, codepoint, category, name in data:
+        print(u'%s\t\\u%04x\t%s\t%s' % (char, codepoint, category, name))
 
 if __name__ == '__main__':
     main()
