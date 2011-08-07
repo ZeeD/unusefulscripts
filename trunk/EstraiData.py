@@ -155,16 +155,20 @@ def main(options, args):
         for mdo in mdoss:
             print("%s:\t%s" % (mdo.filename, mdo.datetime))
         return
+    if options.test:
+        fake_dirs = set()
     for mdos in group_by(sorted(mdoss, key=lambda i: i.datetime), heuristic):
         mdos1, mdos2 = tee(mdos)
         common_prefix = get_common_prefix(mdo.datetime for mdo in mdos1)
         for mdo in mdos2:
             if options.group_in_directories:
                 dirname = new_dir(mdo, common_prefix, options)
-                if not isdir(dirname):
+                if (not options.test and not isdir(dirname)) or (options.test and dirname not in fake_dirs):
                     if options.verbose:
                         print('mkdir %r' % dirname)
-                    if not options.test:
+                    if options.test:
+                        fake_dirs.add(dirname)
+                    else:
                         mkdir(dirname)
             filename = new_file(mdo, common_prefix, options)
             if options.verbose:
