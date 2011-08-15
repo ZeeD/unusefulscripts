@@ -1,10 +1,8 @@
 #!/bin/sh
 
-KFMCLIENT="$(kde-config --prefix)/bin/kfmclient"
-
 source utilities.sh # in_, check_requirements
 
-check_requirements "${KFMCLIENT}"
+check_requirements kde-mv # kde-mv
 
 if [ -z "${*}" -o -n "$(in_ "${1}" '-h' '--help')" ]; then
     echo "Uso: $0 [OPZIONE] [FILES]" >&2
@@ -20,10 +18,10 @@ if [ "${1}" = '-i' ]; then
     for filename in "${@}"; do
         read -e -n 1 -p "$0: rimuovere regular file \`${filename}'? " -s RISPOSTA
         if [[ "${RISPOSTA}" = [yYsS] ]]; then
-            "${KFMCLIENT}" --noninteractive move "${filename}" 'trash:/'
+            kde-mv "${filename}" 'trash:/'
         fi
     done
 else
-    "${KFMCLIENT}" --noninteractive move "${@}" 'trash:/'
+    kde-mv "${@}" 'trash:/'
 fi
 
