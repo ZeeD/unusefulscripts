@@ -6,7 +6,7 @@ from os.path import split, splitext, join, isdir
 import ExifTags
 import Image
 from itertools import groupby, tee, izip_longest
-from optparse import OptionParser, SUPPRESS_HELP
+from optparse import OptionParser, OptionGroup, SUPPRESS_HELP
 from os import mkdir, rename
 from subprocess import Popen, PIPE
 
@@ -31,12 +31,16 @@ class MovMetaData(MetaData):
     """Support for exif tags in .mov files"""
     def __init__(self, mov_filename, tagname):  # tagname is ignored.
         self.filename = mov_filename
-        stdout = Popen(('exiftool', '-CreateDate', '-b', self.filename),
-                stdout=PIPE).communicate()[0]
-        self.datetime = datetime.strptime(stdout, '%Y:%m:%d %H:%M:%S')
-        dirname, basename = split(self.filename)
-        basename, ext = splitext(basename)
-        self.split = dirname, basename, ext
+        try:
+            stdout = Popen(('exiftool', '-CreateDate', '-b', self.filename),
+                    stdout=PIPE).communicate()[0]
+        except OSError as e:
+            raise Exception('%s: No exif tags found (maybe no exiftool installed?)' % self.filename)
+        else:
+            self.datetime = datetime.strptime(stdout, '%Y:%m:%d %H:%M:%S')
+            dirname, basename = split(self.filename)
+            basename, ext = splitext(basename)
+            self.split = dirname, basename, ext
 
 class AviMetaData(MetaData):
     """Support for exif tags in .avi files"""
@@ -49,9 +53,8 @@ class AviMetaData(MetaData):
         basename, ext = splitext(basename)
         self.split = dirname, basename, ext
 
-def heuristic_by_date(xxx_todo_changeme):
+def heuristic_by_date((a, b)):
     """Default heuristic, group by date"""
-    (a, b) = xxx_todo_changeme
     return a.datetime.date()
 
 class make_heuristic_by_hour_distance(object):
@@ -60,17 +63,15 @@ class make_heuristic_by_hour_distance(object):
         self.timedelta = timedelta(hours=max_hour_interval)
         self.returnValue = True
 
-    def __call__(self, xxx_todo_changeme1):
-        (a, b) = xxx_todo_changeme1
+    def __call__(self, (a, b)):
         if b is None or (b.datetime-a.datetime) < self.timedelta:
             return self.returnValue
         else:
             self.returnValue = not self.returnValue
             return not self.returnValue
 
-def heuristic_all_together(xxx_todo_changeme2):
+def heuristic_all_together((a, b)):
     """'Stupid' heuristic: all images belong to the same group"""
-    (a, b) = xxx_todo_changeme2
     return True
 
 def group_by(iterable, grouper):
@@ -136,6 +137,8 @@ def new_dir(metadata_object, common_prefix, options):
 def main(options, args):
     if options.heuristic:
         heuristic = make_heuristic_by_hour_distance()
+    elif options.all_togheter:
+        heuristic = heuristic_all_together
     else:
         heuristic = heuristic_by_date
     # mdos -> MetaData ObjectS
@@ -155,6 +158,8 @@ def main(options, args):
         for mdo in mdoss:
             print("%s:\t%s" % (mdo.filename, mdo.datetime))
         return
+    if not mdoss:
+        raise SystemExit('No valid files!')
     if options.test:
         fake_dirs = set()
     for mdos in group_by(sorted(mdoss, key=lambda i: i.datetime), heuristic):
@@ -181,8 +186,14 @@ def parse_options():
     parser = OptionParser(version='%prog 0.1', usage='%prog [OPTIONS] PHOTOS')
     parser.add_option('-d', '--group-in-directories', action='store_true',
             default=False, help='group images in directories, once per day')
-    parser.add_option('-g', '--heuristic', action='store_true', default=False,
-            help='use heuristic to _g_roup images spanned in various days')
+    group = OptionGroup(parser, 'Heuristic strategies')
+    group.add_option('-g', '--heuristic', action='store_true', default=False,
+            help='use heuristic to group images spanned in various days')
+    group.add_option('-a', '--all-togheter', action='store_true', default=False,
+            help='group all images')
+    group.add_option('-b', '--by-date', action='store_true', default=False,
+            help='group using the date (default)')
+    parser.add_option_group(group)
     parser.add_option('-p', '--preserve-filename', action='store_true',
             default=False, help='preserve original filename')
     parser.add_option('-t', '--test', action='store_true', default=False,
@@ -209,6 +220,12 @@ def do_tests():
 if __name__ == '__main__':
     parser = parse_options()
     options, args = parser.parse_args()
+
+    if ((options.heuristic and options.all_togheter) or
+            (options.heuristic and options.by_date) or
+            (options.all_togheter and options.by_date)):
+        parser.error('Heuristic options are mutually exclusive')
+
     if options.unit_test:
         raise SystemExit(do_tests())
     if not args:
