@@ -10,15 +10,20 @@ from optparse import OptionParser, OptionGroup, SUPPRESS_HELP
 from os import mkdir, rename
 from subprocess import Popen, PIPE
 
+
 class MetaData(object):
-    _supported_tags = { 'DateTime': 306, 'DateTimeOriginal': 36867,
-            'DateTimeDigitized': 36868 }
+    _supported_tags = {
+        'DateTime': 306,
+        'DateTimeOriginal': 36867,
+        'DateTimeDigitized': 36868
+    }
+
     def __init__(self, image_filename, tagname):
-        """construct a datetime object from the exif information stored into the
-        image which is named image_filename"""
+        """construct a datetime object from the exif information stored into
+        the image which is named image_filename"""
         self.filename = image_filename
         tag = MetaData._supported_tags[tagname]
-        assert ExifTags.TAGS[tag] == tagname # maybe it's changed...
+        assert ExifTags.TAGS[tag] == tagname    # maybe it's changed...
         exiftags = Image.open(image_filename)._getexif()
         if not exiftags:
             raise Exception('%s: No exif tags found' % self.filename)
@@ -27,38 +32,43 @@ class MetaData(object):
         basename, ext = splitext(basename)
         self.split = dirname, basename, ext
 
+
 class MovMetaData(MetaData):
     """Support for exif tags in .mov files"""
     def __init__(self, mov_filename, tagname):  # tagname is ignored.
         self.filename = mov_filename
         try:
-            stdout = Popen(('exiftool', '-CreateDate', '-b', self.filename),
-                    stdout=PIPE).communicate()[0]
+            cmdline = ('exiftool', '-CreateDate', '-b', self.filename)
+            stdout = Popen(cmdline, stdout=PIPE).communicate()[0]
         except OSError as e:
-            raise Exception('%s: No exif tags found (maybe no exiftool installed?)' % self.filename)
+            msg_fmt = '%s: No exif tags found (maybe no exiftool installed?)'
+            raise Exception(msg_fmt % self.filename)
         else:
             self.datetime = datetime.strptime(stdout, '%Y:%m:%d %H:%M:%S')
             dirname, basename = split(self.filename)
             basename, ext = splitext(basename)
             self.split = dirname, basename, ext
 
+
 class AviMetaData(MetaData):
     """Support for exif tags in .avi files"""
     def __init__(self, mov_filename, tagname):  # tagname is ignored.
         self.filename = mov_filename
-        stdout = Popen(('exiftool', '-DateTimeOriginal', '-b', self.filename),
-                stdout=PIPE).communicate()[0]
+        cmdline = ('exiftool', '-DateTimeOriginal', '-b', self.filename)
+        stdout = Popen(cmdline, stdout=PIPE).communicate()[0]
         self.datetime = datetime.strptime(stdout, '%Y:%m:%d %H:%M:%S')
         dirname, basename = split(self.filename)
         basename, ext = splitext(basename)
         self.split = dirname, basename, ext
 
+
 def heuristic_by_date((a, b)):
     """Default heuristic, group by date"""
     return a.datetime.date()
 
+
 class make_heuristic_by_hour_distance(object):
-    """Cool heuristic: group if a was made at most max_hour_interval before b"""
+    "Cool heuristic: group if a was made at most max_hour_interval before b"
     def __init__(self, max_hour_interval=12):
         self.timedelta = timedelta(hours=max_hour_interval)
         self.returnValue = True
@@ -70,9 +80,11 @@ class make_heuristic_by_hour_distance(object):
             self.returnValue = not self.returnValue
             return not self.returnValue
 
+
 def heuristic_all_together((a, b)):
     """'Stupid' heuristic: all images belong to the same group"""
     return True
+
 
 def group_by(iterable, grouper):
     """*wrong* wrapper around itertools.groupby"""
@@ -80,11 +92,12 @@ def group_by(iterable, grouper):
     next(b)
     return ((g[0] for g in e[1]) for e in groupby(izip_longest(a, b), grouper))
 
+
 def get_common_prefix(list_of_datetimes):
     """Extract a common_prefix, the kind of YYYY-MM-DD+(DD+1)+...
-    *YEAH*, it doesn't support sequences between 2 different months, so what?"""
-    date = next(list_of_datetimes) # cry if list_of_datetimes is empty
-    ret = [ date.strftime('%F') ]
+    NOTE: it doesn't support sequences between 2 different months!"""
+    date = next(list_of_datetimes)  # cry if list_of_datetimes is empty
+    ret = [date.strftime('%F')]
     for next_date in list_of_datetimes:
         assert next_date.day <= date.day + 1
         if next_date.year != date.year:
@@ -96,21 +109,33 @@ def get_common_prefix(list_of_datetimes):
         date = next_date
     return ''.join(ret)
 
+
 def test_get_common_prefix():
     f = get_common_prefix
     i_es = (
-            (iter([datetime(2009,11,29), datetime(2009,11,30)]),
-                    '2009-11-29+30'),
-            (iter([datetime(2009,11,29), datetime(2009,11,29),
-                            datetime(2009,11,30), datetime(2009,12,1),
-                            datetime(2009,12,2)]),
-                    '2009-11-29+30+12-01+02'),
-            (iter([datetime(2009,12,31),datetime(2010,1,1)]),
-                    '2009-12-31+2010-01-01')
+        (
+            iter([
+                datetime(2009, 11, 29),
+                datetime(2009, 11, 30)]),
+            '2009-11-29+30'),
+        (
+            iter([
+                datetime(2009, 11, 29),
+                datetime(2009, 11, 29),
+                datetime(2009, 11, 30),
+                datetime(2009, 12, 1),
+                datetime(2009, 12, 2)]),
+            '2009-11-29+30+12-01+02'),
+        (
+            iter([
+                datetime(2009, 12, 31),
+                datetime(2010, 1, 1)]),
+            '2009-12-31+2010-01-01')
     )
     for i, e in i_es:
         o = f(i)
         assert o == e, "%s(%s) == %s != %s" % (f.__name__, i, o, e)
+
 
 def new_file(metadata_object, common_prefix, options):
     from re import search
@@ -130,9 +155,11 @@ def new_file(metadata_object, common_prefix, options):
         central_part += ' - ' + basename
     return join(dirname, central_part) + ext
 
+
 def new_dir(metadata_object, common_prefix, options):
     dirname, basename, ext = metadata_object.split
     return join(dirname, common_prefix)
+
 
 def main(options, args):
     if options.heuristic:
@@ -168,7 +195,8 @@ def main(options, args):
         for mdo in mdos2:
             if options.group_in_directories:
                 dirname = new_dir(mdo, common_prefix, options)
-                if (not options.test and not isdir(dirname)) or (options.test and dirname not in fake_dirs):
+                if ((not options.test and not isdir(dirname)) or
+                        (options.test and dirname not in fake_dirs)):
                     if options.verbose:
                         print('mkdir %r' % dirname)
                     if options.test:
@@ -181,33 +209,56 @@ def main(options, args):
             if not options.test:
                 rename(mdo.filename, filename)
 
+
 def parse_options():
     """Create an OptionParser istance, add the user options and return it"""
     parser = OptionParser(version='%prog 0.1', usage='%prog [OPTIONS] PHOTOS')
-    parser.add_option('-d', '--group-in-directories', action='store_true',
-            default=False, help='group images in directories, once per day')
+    parser.add_option(
+        '-d', '--group-in-directories',
+        action='store_true', default=False,
+        help='group images in directories, once per day')
     group = OptionGroup(parser, 'Heuristic strategies')
-    group.add_option('-g', '--heuristic', action='store_true', default=False,
-            help='use heuristic to group images spanned in various days')
-    group.add_option('-a', '--all-togheter', action='store_true', default=False,
-            help='group all images')
-    group.add_option('-b', '--by-date', action='store_true', default=False,
-            help='group using the date (default)')
+    group.add_option(
+        '-g', '--heuristic',
+        action='store_true', default=False,
+        help='use heuristic to group images spanned in various days')
+    group.add_option(
+        '-a', '--all-togheter',
+        action='store_true', default=False,
+        help='group all images')
+    group.add_option(
+        '-b', '--by-date',
+        action='store_true', default=False,
+        help='group using the date (default)')
     parser.add_option_group(group)
-    parser.add_option('-p', '--preserve-filename', action='store_true',
-            default=False, help='preserve original filename')
-    parser.add_option('-t', '--test', action='store_true', default=False,
-            help="test only: doesn't actually rename anything")
-    parser.add_option('-v', '--verbose', action='store_true', default=False,
-            help='show on STDOUT what happens')
-    parser.add_option('-k', '--key', action='store', default='DateTime',
-            type=str, help='use KEY to extract date from the image '
-                    '(default=%default, available=' +
-                    str(list(MetaData._supported_tags.keys())) + ')')
-    parser.add_option('--unit-test', action='store_true', help=SUPPRESS_HELP)
-    parser.add_option('-x', '--extract-only', action='store_true',
-            default=False, help="just show the exif date of the images")
+    parser.add_option(
+        '-p', '--preserve-filename',
+        action='store_true', default=False,
+        help='preserve original filename')
+    parser.add_option(
+        '-t', '--test',
+        action='store_true', default=False,
+        help="test only: doesn't actually rename anything")
+    parser.add_option(
+        '-v', '--verbose',
+        action='store_true', default=False,
+        help='show on STDOUT what happens')
+
+    fmt = 'use KEY to extract date from the image (default=%s, available=%s)'
+    parser.add_option(
+        '-k', '--key',
+        action='store', default='DateTime', type=str,
+        help=fmt % ('%default', MetaData._supported_tags.keys()))
+    parser.add_option(
+        '--unit-test',
+        action='store_true',
+        help=SUPPRESS_HELP)
+    parser.add_option(
+        '-x', '--extract-only',
+        action='store_true', default=False,
+        help="just show the exif date of the images")
     return parser
+
 
 def do_tests():
     try:
