@@ -6,12 +6,15 @@ from os import rename
 from os.path import exists, basename, dirname, join, abspath, splitext
 
 os_path_splitext = splitext
+
+
 def splitext(pathname, exts=('.tar.gz', )):
     '''Wrap os.path.splitext() to know strange extensions (like .tar.gz)'''
     for ext in exts:
         if pathname.endswith(ext):
             return pathname.split(ext)[0], ext
     return os_path_splitext(pathname)
+
 
 def number_len(i):
     """Calcola il numero di cifre necessarie per un numero in una certa base"""
@@ -21,20 +24,34 @@ if __name__ == '__main__':
     parser = OptionParser(version='%prog 0.2.0', usage='''%prog (FILE|"")...
         Mette un numero in ordine crescente davanti ad ogni FILE specificato
         Usa "" per inserire "buchi"''')
-    parser.add_option('-b', '--begin', type='int', default=1, metavar='N',
-            help='Inizia a numerare da N (default = %default)')
-    parser.add_option('-v', '--verbose', action='store_true', default=False,
-            help='Mostra sullo STDOUT cosa accade')
-    parser.add_option('-c', '--cifre', type='int', default=0, metavar='N',
-            help='Usa almeno N cifre per i numeri (default = %default)')
-    parser.add_option('-t', '--test', action='store_true', default=False,
-            help='Non effettuare davvero la rinomina dei file (utile con -v)')
-    parser.add_option('-u', '--use-dirname', action='store_true', default=False,
-            help='Invece del nome originale, usa il nome della directory')
-    parser.add_option('-p', '--pre', type=str, default='', metavar='STR',
-            help='Inserisci la stringa STR in testa')
-    parser.add_option('-s', '--switch', action='store_true', default=False,
-            help='Inverti di posizione nome del file e numero (utile con -u)')
+    parser.add_option(
+        '-b', '--begin',
+        type='int', default=1, metavar='N',
+        help='Inizia a numerare da N (default = %default)')
+    parser.add_option(
+        '-v', '--verbose',
+        action='store_true', default=False,
+        help='Mostra sullo STDOUT cosa accade')
+    parser.add_option(
+        '-c', '--cifre',
+        type='int', default=0, metavar='N',
+        help='Usa almeno N cifre per i numeri (default = %default)')
+    parser.add_option(
+        '-t', '--test',
+        action='store_true', default=False,
+        help='Non effettuare davvero la rinomina dei file (utile con -v)')
+    parser.add_option(
+        '-u', '--use-dirname',
+        action='store_true', default=False,
+        help='Invece del nome originale, usa il nome della directory')
+    parser.add_option(
+        '-p', '--pre',
+        type=str, default='', metavar='STR',
+        help='Inserisci la stringa STR in testa')
+    parser.add_option(
+        '-s', '--switch',
+        action='store_true', default=False,
+        help='Inverti di posizione nome del file e numero (utile con -u)')
 
     options, args = parser.parse_args()
 
