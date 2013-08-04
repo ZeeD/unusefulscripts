@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import print_function, unicode_literals
 
 import datetime
 import dbus
@@ -18,6 +18,7 @@ LOCAL_PATH = '/var/lib/slackpkg/ChangeLog.txt'
 REMOTE_DOMAIN = 'mirror2.mirror.garr.it'
 REMOTE_PATH = '/pub/1/slackware/slackware64-current/ChangeLog.txt'
 TEXT_ENCODING = 'latin1'
+
 
 class debug(object):
     '''decorate function to trace the callstack'''
@@ -87,16 +88,16 @@ def notify(news):
     '''send a popup to kde with the news'''
 
     dbus.SessionBus().get_object('org.kde.knotify', '/Notify').event(
-            'warning',
-            'kde',
-            [],
-            'SlackNews',
-            '<p>' + '<br />'.join(news) + '</p>',
-            [],
-            [],
-            0,
-            0,
-            dbus_interface='org.kde.KNotify')
+        'warning',
+        'kde',
+        [],
+        'SlackNews',
+        '<p>' + '<br />'.join(news) + '</p>',
+        [],
+        [],
+        0,
+        0,
+        dbus_interface='org.kde.KNotify')
 
 
 @debug
@@ -122,7 +123,7 @@ def loop():
     while True:
         try:
             main()
-            time.sleep(60 * 60) # one hour, in seconds
+            time.sleep(60 * 60)     # one hour, in seconds
         except KeyboardInterrupt:
             raise SystemExit('\nbye!')
 
