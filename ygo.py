@@ -7,6 +7,7 @@ from sys import argv
 from struct import unpack
 from array import array
 
+
 def read_uint32(f):
     bytes = f.read(4)   # 32 = 4 * 8
     uint = unpack('I', bytes)[0]
@@ -39,10 +40,12 @@ def dump(fn):
             file_name = read_decript_filename(f)
             file_offset = read_uint32(f)
             file_size = read_uint32(f)
-            size2 = read_uint32(f) # inutile ?
+            size2 = read_uint32(f)  # inutile ?
 
-            print('name: %s, offset: %s, size: %s, size2: %s' %
-                        (file_name, file_offset, file_size, size2))
+            print(
+                'name: %s, offset: %s, size: %s, size2: %s' %
+                (file_name, file_offset, file_size, size2)
+            )
 
 
 def main():
