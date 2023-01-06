@@ -18,7 +18,7 @@ CLOCKS = [
 ]
 
 
-def clocks(now):
+def clocks(now: datetime) -> str:
     '''io ho HH:00, HH:30, HH+1:00
 
     se ho MM < 15 uso HH:00
