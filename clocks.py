@@ -1,19 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
+from datetime import datetime
 
 CLOCKS = [
-    u'🕐', u'🕜',
-    u'🕑', u'🕝',
-    u'🕒', u'🕞',
-    u'🕓', u'🕟',
-    u'🕔', u'🕠',
-    u'🕕', u'🕡',
-    u'🕖', u'🕢',
-    u'🕗', u'🕣',
-    u'🕘', u'🕤',
-    u'🕙', u'🕥',
-    u'🕚', u'🕦',
-    u'🕛', u'🕧'
+    '🕐', '🕜',
+    '🕑', '🕝',
+    '🕒', '🕞',
+    '🕓', '🕟',
+    '🕔', '🕠',
+    '🕕', '🕡',
+    '🕖', '🕢',
+    '🕗', '🕣',
+    '🕘', '🕤',
+    '🕙', '🕥',
+    '🕚', '🕦',
+    '🕛', '🕧'
 ]
 
 
@@ -31,19 +32,14 @@ def clocks(now):
         # 1:00 è all'indice 0, 2:00 all'indice 2,
         # 13:00 all'indice 0, 14:00 all'indice 2
         return CLOCKS[(hour-1)*2 % len(CLOCKS)]
-    elif minute < 45:
+
+    if minute < 45:
         # 1:30 è all'indice 1, 2:30 all' indice 3,
         # 13:30 all'indice 1, 14:30 all'indice 3
         return CLOCKS[(hour-1)*2 % len(CLOCKS)+1]
-    else:
-        # possibile overflow alle 12:45
-        return CLOCKS[hour*2 % len(CLOCKS)]
+
+    # possibile overflow alle 12:45
+    return CLOCKS[hour*2 % len(CLOCKS)]
 
 
-def main():
-    import datetime
-
-    print(clocks(datetime.datetime.now()).encode('utf8'))
-
-if __name__ == '__main__':
-    main()
+print(clocks(datetime.now()))
