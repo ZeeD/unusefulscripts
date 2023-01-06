@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding/<project>=UTF-8
 encoding/EstraiData.py=utf-8
 encoding/Numera.py=utf-8
 encoding/Rinomina.py=utf-8
@@ -6,7 +7,6 @@ encoding/SistemaCase.py=utf-8
 encoding/SistemaNumeri.py=utf-8
 encoding/Televideo.py=utf-8
 encoding/Thumbs.py=utf-8
-encoding/UnicodeName.py=utf-8
 encoding/Walla.py=utf-8
 encoding/clocks.py=utf-8
 encoding/slacknews.py=utf-8
