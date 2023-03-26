@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 '''
 Rinomina.py
 -----------
@@ -131,19 +131,16 @@ def main():
             destinazione = formato % intero + sorgente
         if not exists(destinazione):
             if options.verbose:
-                print sorgente, '->', destinazione,
+                print(f'{sorgente} -> {destinazione}', end=' ')
                 if options.imgs:
                     im_x, im_y = im_open(sorgente).size
-                    print "(%dx%d, %d, %d)" % (
-                        im_x, im_y, im_x*im_y,
-                        -abs(im_x-im_y)
-                    )
+                    print(f'({im_x}x{im_y}, {im_x*im_y}, {-abs(im_x-im_y)})')
                 else:
-                    print
+                    print()
             if not options.test:
                 rename(sorgente, destinazione)
         else:
-            warn(destinazione+' è già usato!', RuntimeWarning, 2)
+            warn(f'{destinazione!r} è già usato!', RuntimeWarning, 2)
 
 if __name__ == '__main__':
     main()

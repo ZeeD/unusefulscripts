@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from optparse import OptionParser
 from os import rename
-from os.path import exists, basename, dirname, join, abspath, splitext
+from os.path import abspath, basename, dirname, exists, join, splitext
 
 os_path_splitext = splitext
 
 
 def splitext(pathname, exts=('.tar.gz', )):
-    '''Wrap os.path.splitext() to know strange extensions (like .tar.gz)'''
+    'Wrap os.path.splitext() to know strange extensions (like .tar.gz)'
     for ext in exts:
         if pathname.endswith(ext):
             return pathname.split(ext)[0], ext
@@ -17,13 +16,13 @@ def splitext(pathname, exts=('.tar.gz', )):
 
 
 def number_len(i):
-    """Calcola il numero di cifre necessarie per un numero in una certa base"""
+    'Calcola il numero di cifre necessarie per un numero in una certa base'
     return len(str(int(i)))
 
 if __name__ == '__main__':
-    parser = OptionParser(version='%prog 0.2.0', usage='''%prog (FILE|"")...
+    parser = OptionParser(version='%prog 0.2.0', usage='''%prog (FILE|'')...
         Mette un numero in ordine crescente davanti ad ogni FILE specificato
-        Usa "" per inserire "buchi"''')
+        Usa '' per inserire 'buchi\'''')
     parser.add_option(
         '-b', '--begin',
         type='int', default=1, metavar='N',
@@ -70,14 +69,14 @@ if __name__ == '__main__':
         if options.use_dirname:
             filename = basename(abspath(sourcedir))
         if not options.switch:
-            completefilename = "%s - %s" % (format % number, filename)
+            completefilename = '%s - %s' % (format % number, filename)
         else:
-            completefilename = "%s - %s" % (filename, format % number)
+            completefilename = '%s - %s' % (filename, format % number)
         dest = join(sourcedir, options.pre + completefilename + ext)
         if not exists(dest):
             if options.verbose:
-                print source, '->', dest
+                print(f'{source} -> {dest}')
             if not options.test:
                 rename(source, dest)
         else:
-            raise RuntimeWarning("`%s' è già usato!" % dest)
+            raise RuntimeWarning(f'{dest!r} è già usato!')
