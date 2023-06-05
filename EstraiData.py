@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 from datetime import datetime, timedelta
-from itertools import groupby, izip_longest, tee
+from itertools import groupby, tee, zip_longest
 from optparse import SUPPRESS_HELP, OptionGroup, OptionParser
 from os import mkdir, rename
 from os.path import isdir, join, split, splitext
 from subprocess import PIPE, Popen
 
-import ExifTags
-import Image
+from PIL import ExifTags, Image
 
 
 class MetaData(object):
@@ -93,7 +92,7 @@ def group_by(iterable, grouper):
     """*wrong* wrapper around itertools.groupby"""
     a, b = tee(iterable)
     next(b)
-    return ((g[0] for g in e[1]) for e in groupby(izip_longest(a, b), grouper))
+    return ((g[0] for g in e[1]) for e in groupby(zip_longest(a, b), grouper))
 
 
 def get_common_prefix(list_of_datetimes):
