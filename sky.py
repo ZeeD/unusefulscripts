@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-import urllib2
 import json
 from datetime import date, datetime
+
+import urllib2
+
 
 class Channel(object):
     fmt_str = 'http://guidatv.sky.it/app/guidatv/contenuti/data/grid/%s/ch_%s.js'

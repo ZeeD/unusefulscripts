@@ -3,8 +3,9 @@
 # 200-06-14 - Versione iniziale
 # SistemaNumeri.py
 
-from os.path import exists, split, join
-from itertools import starmap, imap, izip
+from itertools import imap, izip, starmap
+from os.path import exists, join, split
+
 
 def warn(string, error=False):
     """Comunicazione di warning / errori, con terminazione del programma

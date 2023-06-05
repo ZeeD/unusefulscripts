@@ -9,11 +9,13 @@ RISOLUZIONI_ACCETTATE = (
 )
 
 from optparse import OptionParser, OptionValueError
-from os.path import isdir, isfile, basename, abspath, join, split, exists, \
-        islink, realpath, dirname
-from os import listdir, symlink, remove
-from Image import open as iopen
-from shutil import move, copy
+from os import listdir, remove, symlink
+from os.path import (abspath, basename, dirname, exists, isdir, isfile, islink,
+                     join, realpath, split)
+from shutil import copy, move
+
+from PIL.Image import open as iopen
+
 
 def walla_unwalla(directories, files, options):
     '''Recursively tag or untag image files'''

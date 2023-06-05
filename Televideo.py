@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 
-def analizza(pagina):
-    from urllib2 import urlopen
-    from BeautifulSoup import BeautifulSoup
-    # WARN: very black magik - la sto scrivendo e non so quel che fa
-    return ''.join(BeautifulSoup(urlopen(
-            'http://www.televideo.rai.it/televideo/pub/catturaSottopagine.jsp?'
-            'pagina=%d' % pagina, timeout=3).read())('pre')[0].contents[5:20:7]) # 5,12,19
+from curses import KEY_DOWN, KEY_UP, endwin, error, initscr
+from optparse import OptionParser
+from os import environ
+from urllib.request import urlopen
+
+from bs4 import BeautifulSoup
+from qtpy.QtWidgets import QApplication, QMainWindow, QTextEdit
+
+
+def analizza(pagina: int) -> str:
+    soup = urlopen(f'http://www.televideo.rai.it/televideo/pub/catturaSottopagine.jsp?pagina={pagina}',
+                   timeout=3).read()
+    ret = ''.join(str(e) for e in BeautifulSoup(soup, features='html.parser')('pre')[0].contents)
+    return ret
 
 def cli(page):
-    from curses import initscr, error, endwin, KEY_DOWN, KEY_UP
-    from locale import setlocale, LC_ALL, getpreferredencoding
-
-    setlocale(LC_ALL, '')
-
-    text = analizza(page).encode(getpreferredencoding()).split('\n')
+    text = analizza(page).split('\n')
 
     text_len = len(text)
     i = 0
@@ -35,12 +37,12 @@ def cli(page):
             pass            # ignore chars not in (a, q, z, KEY_UP, KEY_DOWN)
     endwin()
 
+
 def dump(pagina):
     print(analizza(pagina))
 
-def gui(argv, pagina):
-    from PyQt4.QtGui import QApplication, QMainWindow, QTextEdit
 
+def gui(argv, pagina):
     app = QApplication(argv)
     mainWindow = QMainWindow()
     textEdit = QTextEdit()
@@ -54,17 +56,15 @@ def gui(argv, pagina):
 
 
 if __name__ == '__main__':
-    from optparse import OptionParser
-
-    parser = OptionParser(version = '%prog 0.8.0')
+    parser = OptionParser(version='%prog 0.8.0')
     parser.add_option('-g', '--gui', action='store_true', default=False,
-            help="Force the qt4 gui interface")
+                      help='Force the qt4 gui interface')
     parser.add_option('-c', '--cli', action='store_true', default=False,
-            help="Force the ncurses cli interface")
-    parser.add_option('-p', '--page', type="int", default=505,
-            help="Show this page")
+                      help='Force the ncurses cli interface')
+    parser.add_option('-p', '--page', type='int', default=505,
+                      help='Show this page')
     parser.add_option('-d', '--dump', action='store_true', default=False,
-            help="Force the 'just dump the content of the page' iterface")
+                      help='Force the "just dump the content of the page" iterface')
     options, args = parser.parse_args()
 
     if sum(int(value) for value in [options.gui, options.cli, options.dump]) > 1:
@@ -77,10 +77,7 @@ if __name__ == '__main__':
     elif options.dump:
         dump(options.page)
     else:
-        from os import environ
-
-        if not environ.has_key('TERM') or environ['TERM'] in ('xterm', 'rxvt',
-                'xterm-color'):
+        if 'TERM' not in environ or environ['TERM'] in ('xterm', 'rxvt', 'xterm-color', 'xterm-256color'):
             cli(options.page)
         else:
             gui(args, options.page)

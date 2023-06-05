@@ -1,18 +1,16 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function, unicode_literals
 
 import datetime
-import dbus
 import email.utils
 import functools
-import httplib
 import itertools
 import os
-import time
-import urllib2
 import sys
+import time
+
+import dbus
+import httplib
+import urllib2
 
 LOCAL_PATH = '/var/lib/slackpkg/ChangeLog.txt'
 REMOTE_DOMAIN = 'mirror2.mirror.garr.it'

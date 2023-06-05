@@ -1,11 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-from __future__ import print_function
-
-from sys import argv
-from struct import unpack
 from array import array
+from struct import unpack
+from sys import argv
 
 
 def read_uint32(f):

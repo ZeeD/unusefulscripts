@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-from PIL import Image
-from os.path import join, basename
 from os import mkdir
+from os.path import basename, join
+
+from PIL import Image
+
 
 def parse_options():
     """Create an OptionParser istance, add the user options and return it"""

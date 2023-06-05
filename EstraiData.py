@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 from datetime import datetime, timedelta
-from os.path import split, splitext, join, isdir
+from itertools import groupby, izip_longest, tee
+from optparse import SUPPRESS_HELP, OptionGroup, OptionParser
+from os import mkdir, rename
+from os.path import isdir, join, split, splitext
+from subprocess import PIPE, Popen
+
 import ExifTags
 import Image
-from itertools import groupby, tee, izip_longest
-from optparse import OptionParser, OptionGroup, SUPPRESS_HELP
-from os import mkdir, rename
-from subprocess import Popen, PIPE
 
 
 class MetaData(object):

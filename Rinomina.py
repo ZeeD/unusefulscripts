@@ -10,8 +10,9 @@ sequence, following a series of rules.
 
 from optparse import OptionParser, OptionValueError
 from os import chdir, listdir, rename
-from os.path import abspath, basename, curdir, exists, splitext, isfile, isdir
+from os.path import abspath, basename, curdir, exists, isdir, isfile, splitext
 from warnings import warn
+
 from Image import open as im_open
 
 

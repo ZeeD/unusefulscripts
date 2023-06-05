@@ -55,7 +55,7 @@ def main():
         try:
             pagine_totali = int(arg)
         except ValueError:
-            from pyPdf import PdfFileReader # not needed if arg is a number
+            from pyPdf import PdfFileReader  # not needed if arg is a number
             try:
                 pagine_totali = PdfFileReader(file(arg, "rb")).numPages
             except:

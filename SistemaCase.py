@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import sys
 import optparse
 import os
+import sys
+
 
 def warn(string, args=()):
     "Comunica warning su stderr, con una sintassi simile a quella di optparse"

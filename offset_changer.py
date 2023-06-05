@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-from sys import argv
-from datetime import timedelta
+from datetime import datetime, timedelta
 from shutil import copy
-from datetime import datetime
+from sys import argv
 
 '''
 id
