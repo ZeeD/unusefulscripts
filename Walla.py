@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 'Scan for files and directories searching for (and renaming) wallpaper images'
 
@@ -43,7 +42,7 @@ def walla_file(filename, options):
 
     size = image.size
     if options.verbose:
-        print "`%s' -> `%s'" % (filename, size)
+        print("`%s' -> `%s'" % (filename, size))
     if size not in RISOLUZIONI_ACCETTATE:
         return warn("`%s' non è un wallpaper.", filename)
 
@@ -61,7 +60,7 @@ def walla_file(filename, options):
         return warn("`%s' è già esistente.", output_file)
 
     if options.verbose:
-        print "\t-> `%s'" % (output_file, )
+        print("\t-> `%s'" % (output_file, ))
     if not options.test:
         if not options.copy:
             move(filename, output_file)
@@ -81,7 +80,7 @@ def unwalla_file(input_file_name, options):
     if islink(input_file_name):
         real_file_name = realpath(input_file_name)
         if options.verbose:
-            print "`%s' -> (None)" % input_file_name
+            print("`%s' -> (None)" % input_file_name)
         if not options.test:
             remove(input_file_name)
     else:
@@ -94,7 +93,7 @@ def unwalla_file(input_file_name, options):
         return warn("`%s' è già esistente.", output_file_name)
 
     if options.verbose:
-        print "`%s' -> `%s'" % (real_file_name, output_file_name)
+        print("`%s' -> `%s'" % (real_file_name, output_file_name))
     if not options.test:
         move(real_file_name, output_file_name)
 
@@ -144,11 +143,11 @@ def renew(options, args):
             continue
         new_path = join(OUTDIR, basename(old_path))
         if options.verbose:
-            print "`%s' -> (None)" % old_path
+            print("`%s' -> (None)" % old_path)
         if not options.test:
             remove(arg)
         if options.verbose:
-            print "`%s' -> `%s'" % (arg, new_path)
+            print("`%s' -> `%s'" % (arg, new_path))
         if not options.test:
             symlink(new_path, arg)
     raise SystemExit()

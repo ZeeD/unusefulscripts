@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 def analizza(pagina):
     from urllib2 import urlopen
@@ -37,7 +36,7 @@ def cli(page):
     endwin()
 
 def dump(pagina):
-    print analizza(pagina)
+    print(analizza(pagina))
 
 def gui(argv, pagina):
     from PyQt4.QtGui import QApplication, QMainWindow, QTextEdit

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
 from os.path import split, splitext, join, isdir
@@ -62,8 +61,9 @@ class AviMetaData(MetaData):
         self.split = dirname, basename, ext
 
 
-def heuristic_by_date((a, b)):
+def heuristic_by_date(pair):
     """Default heuristic, group by date"""
+    (a, b) = pair
     return a.datetime.date()
 
 
@@ -73,7 +73,8 @@ class make_heuristic_by_hour_distance(object):
         self.timedelta = timedelta(hours=max_hour_interval)
         self.returnValue = True
 
-    def __call__(self, (a, b)):
+    def __call__(self, pair):
+        (a, b) = pair
         if b is None or (b.datetime-a.datetime) < self.timedelta:
             return self.returnValue
         else:
@@ -81,8 +82,9 @@ class make_heuristic_by_hour_distance(object):
             return not self.returnValue
 
 
-def heuristic_all_together((a, b)):
+def heuristic_all_together(pair):
     """'Stupid' heuristic: all images belong to the same group"""
+    (a, b) = pair
     return True
 
 

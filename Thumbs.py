@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from PIL import Image
 from os.path import join, basename
@@ -24,7 +23,7 @@ def resize(options, image):
     size = map(int, options.size.split('x'))
     dest = join(options.target_directory, basename(image))
     if options.verbose:
-        print 'Resizing %s @ %dx%d as %s' % (image, size[0], size[1], dest)
+        print('Resizing %s @ %dx%d as %s' % (image, size[0], size[1], dest))
     im = Image.open(image)
     im.thumbnail(size, Image.ANTIALIAS)
     if not options.test:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 format_string = "%s * %s == %s == %s + %s"
 
@@ -17,12 +16,12 @@ def print_one_row(headers_l, format, pt, ppr, nr):
     ps = ppr * nr
     elements = (ppr, nr, ps, pt, ps-pt)
     tmp = (("%d (== 4x%d)" % (elements[0], elements[0]/4)).center(headers_l[0]), )
-    print format % (tmp + tuple(str(n).center(l) for n,l in zip(elements, headers_l)[1:]))
+    print(format % (tmp + tuple(str(n).center(l) for n,l in zip(elements, headers_l)[1:])))
 
 def print_output(headers, format, pagine_totali, show_all=False):
     from itertools import groupby
-    print format_string % headers
-    print "-" * (sum(map(len, headers)) + 14) # " * ", " == ", " == ", " + "
+    print(format_string % headers)
+    print("-" * (sum(map(len, headers)) + 14)) # " * ", " == ", " == ", " + "
     headers_l = map(len, headers)
     if show_all:
         for pagine_per_raggruppamento, numero_raggruppamenti in raggruppamenti(

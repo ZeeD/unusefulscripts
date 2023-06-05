@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import sys
 import optparse
@@ -46,7 +45,7 @@ def sistema_case(options, args):
             warn("%s è già usato!", nuovoNome)
         else:
             if options.verbose:
-                print vecchioNome, '->', nuovoNome
+                print(f'{vecchioNome} -> {nuovoNome}')
             if not options.test:
                 os.rename(vecchioNome, nuovoNome)
 

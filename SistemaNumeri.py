@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 # 200-06-14 - Versione iniziale
 # SistemaNumeri.py
@@ -132,7 +131,7 @@ def move(options):
     from shutil import move as shmove
     def move_opted(file_from, file_to):
         if options.verbose:
-            print file_from, '->', file_to
+            print(f'{file_from} -> {file_to}')
         if exists(file_to):
             warn("%s è già usato!" % file_to)
         else:
