@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from shutil import copy
 from sys import argv
 
-'''
+"""
 id
 datetime --> datetime (see TIME_FMT)
 string
 string
 (empty)
-'''
+"""
 
 SPLITTER = ' --> '
 TIME_FMT = '%H:%M:%S,%f'
@@ -31,13 +32,13 @@ def offset_changer(filename, offset):
             start, end = subtitle_time.split(SPLITTER)
             start, end = (
                 datetime.strptime(start, TIME_FMT),
-                datetime.strptime(end, TIME_FMT)
+                datetime.strptime(end, TIME_FMT),
             )
             if (start + offset).year >= 1900:
                 start, end = start + offset, end + offset
             start, end = (
                 start.strftime(TIME_FMT)[:-3],
-                end.strftime(TIME_FMT)[:-3]
+                end.strftime(TIME_FMT)[:-3],
             )
             subtitle_time = SPLITTER.join([start, end])
             outfile.write(subtitle_time + '\n')
@@ -51,11 +52,12 @@ def offset_changer(filename, offset):
 
 def main():
     if len(argv) < 3:
-        raise SystemExit('Uso: %s filename offset' % (argv[0], ))
+        raise SystemExit('Uso: %s filename offset' % (argv[0],))
 
     filename = argv[1]
     offset = timedelta(seconds=int(argv[2]))
     offset_changer(filename, offset)
+
 
 if __name__ == '__main__':
     main()

@@ -6,7 +6,7 @@ from sys import argv
 
 
 def read_uint32(f):
-    bytes = f.read(4)   # 32 = 4 * 8
+    bytes = f.read(4)  # 32 = 4 * 8
     uint = unpack('I', bytes)[0]
     return uint
 
@@ -22,15 +22,15 @@ def read_decript_filename(f):
             file_name[j] = chr(ord(file_name[j]) + tmp)
 
     # drop trailing '\0'
-    file_name = file_name[:file_name.index('\0')]
+    file_name = file_name[: file_name.index('\0')]
 
-    return file_name.tostring().decode(u'ascii')
+    return file_name.tostring().decode('ascii')
 
 
 def dump(fn):
-    with open(fn, u'rb') as f:
-        header = f.read(8).decode(u'ascii')
-        assert header == u'KCEJYUGI'
+    with open(fn, 'rb') as f:
+        header = f.read(8).decode('ascii')
+        assert header == 'KCEJYUGI'
 
         file_count = read_uint32(f)
         for i in range(file_count):
@@ -40,14 +40,15 @@ def dump(fn):
             size2 = read_uint32(f)  # inutile ?
 
             print(
-                'name: %s, offset: %s, size: %s, size2: %s' %
-                (file_name, file_offset, file_size, size2)
+                'name: %s, offset: %s, size: %s, size2: %s'
+                % (file_name, file_offset, file_size, size2)
             )
 
 
 def main():
     fn = argv[1]
     dump(fn)
+
 
 if __name__ == '__main__':
     main()

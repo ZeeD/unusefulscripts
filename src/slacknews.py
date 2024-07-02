@@ -2,7 +2,6 @@
 
 import datetime
 import email.utils
-import functools
 import itertools
 import os
 import sys
@@ -18,8 +17,9 @@ REMOTE_PATH = '/pub/1/slackware/slackware64-current/ChangeLog.txt'
 TEXT_ENCODING = 'latin1'
 
 
-class debug(object):
-    '''decorate function to trace the callstack'''
+class debug:
+    """decorate function to trace the callstack"""
+
     enabled = False
     fmt = '{}%s [%s: %s]\n'
 
@@ -41,7 +41,7 @@ class debug(object):
 
 @debug
 def remote_last_modified():
-    '''find the last modified time on the remote changelog'''
+    """Find the last modified time on the remote changelog"""
     conn = httplib.HTTPConnection(REMOTE_DOMAIN)
     conn.request('HEAD', REMOTE_PATH)
     res = conn.getresponse()
@@ -52,39 +52,38 @@ def remote_last_modified():
 
 @debug
 def local_last_modified():
-    '''find the last modified time on my machine'''
+    """Find the last modified time on my machine"""
     mtime = os.path.getmtime(LOCAL_PATH)
     return datetime.datetime.fromtimestamp(mtime)
 
 
 @debug
 def remote_content():
-    '''retrieve the remote changelog'''
+    """Retrieve the remote changelog"""
     remote = urllib2.urlopen('http://' + REMOTE_DOMAIN + REMOTE_PATH)
     return remote.read().decode(TEXT_ENCODING).split('\n')
 
 
 @debug
 def local_content():
-    '''retrieve the local changelog content
+    """Retrieve the local changelog content
     (in pratice I just need the first row)
-    '''
+    """
     with open(LOCAL_PATH) as local:
         return local.read().decode(TEXT_ENCODING).split('\n')
 
 
 @debug
 def diff(list1, list2):
-    '''not a real differ, it expect list1 = [new1|new2|new3] + list2
+    """Not a real differ, it expect list1 = [new1|new2|new3] + list2
     return all first element of list1; break if found in the head row of list2
-    '''
+    """
     return itertools.takewhile(lambda row: row != list2[0], list1)
 
 
 @debug
 def notify(news):
-    '''send a popup to kde with the news'''
-
+    """Send a popup to kde with the news"""
     dbus.SessionBus().get_object('org.kde.knotify', '/Notify').event(
         'warning',
         'kde',
@@ -95,14 +94,15 @@ def notify(news):
         [],
         0,
         0,
-        dbus_interface='org.kde.KNotify')
+        dbus_interface='org.kde.KNotify',
+    )
 
 
 @debug
 def main():
-    '''main loop body
+    """Main loop body
     check for news; if true, show a popup on kde.
-    '''
+    """
     remote = remote_last_modified()
     local = local_last_modified()
     local_is_newer = local < remote
@@ -115,18 +115,18 @@ def main():
 
 @debug
 def loop():
-    '''main loop
+    """Main loop
     every hour call the main loop body
-    '''
+    """
     while True:
         try:
             main()
-            time.sleep(60 * 60)     # one hour, in seconds
+            time.sleep(60 * 60)  # one hour, in seconds
         except KeyboardInterrupt:
             raise SystemExit('\nbye!')
 
 
 if __name__ == '__main__':
-    #debug.enabled = True
-    #main()
+    # debug.enabled = True
+    # main()
     loop()

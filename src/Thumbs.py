@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from os import mkdir
-from os.path import basename, join
+from os.path import basename
+from os.path import join
 
 from PIL import Image
 
@@ -11,15 +12,38 @@ def parse_options():
     from optparse import OptionParser
 
     parser = OptionParser(version='%prog 0.1', usage='%prog [OPTIONS] IMAGES')
-    parser.add_option('-s', '--size', action='store', type=str,
-            default='640x480', help='Resize to this size (default=%default)')
-    parser.add_option('-d', '--target-directory', action='store', type=str,
-            default='Thumbs', help='Target directory (default=%default)')
-    parser.add_option('-t', '--test', action='store_true', default=False,
-            help="test only: doesn't actually rename anything")
-    parser.add_option('-v', '--verbose', action='store_true', default=False,
-            help='show on STDOUT what happens')
+    parser.add_option(
+        '-s',
+        '--size',
+        action='store',
+        type=str,
+        default='640x480',
+        help='Resize to this size (default=%default)',
+    )
+    parser.add_option(
+        '-d',
+        '--target-directory',
+        action='store',
+        type=str,
+        default='Thumbs',
+        help='Target directory (default=%default)',
+    )
+    parser.add_option(
+        '-t',
+        '--test',
+        action='store_true',
+        default=False,
+        help="test only: doesn't actually rename anything",
+    )
+    parser.add_option(
+        '-v',
+        '--verbose',
+        action='store_true',
+        default=False,
+        help='show on STDOUT what happens',
+    )
     return parser
+
 
 def resize(options, image):
     size = map(int, options.size.split('x'))
@@ -30,6 +54,7 @@ def resize(options, image):
     im.thumbnail(size, Image.ANTIALIAS)
     if not options.test:
         im.save(dest)
+
 
 def main():
     parser = parse_options()
@@ -42,6 +67,7 @@ def main():
         pass
     for image in args:
         resize(options, image)
+
 
 if __name__ == '__main__':
     main()
