@@ -9,7 +9,7 @@ from unicodedata import category
 from unicodedata import name
 
 
-def unicode_name(string: str) -> list[str]:
+def unicode_names(string: str) -> list[str]:
     return [
         f'{char}\t\\U{ord(char):08x}\t{category(char)}\t{name(char)}'
         for char in string
@@ -29,10 +29,9 @@ def main() -> None:
         if i > 0:
             info('')
         info('string: %r', string)
-        for name_ in unicode_name(string):
+        for name_ in unicode_names(string):
             info(name_)
 
 
 if __name__ == '__main__':
     main()
-

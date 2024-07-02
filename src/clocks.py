@@ -1,17 +1,44 @@
 #!/usr/bin/env python
 
 from datetime import datetime
+from datetime import time
 from logging import INFO
 from logging import basicConfig
 from logging import info
+from zoneinfo import ZoneInfo
 
-CLOCKS = '🕐🕜🕑🕝🕒🕞🕓🕟🕔🕠🕕🕡🕖🕢🕗🕣🕘🕤🕙🕥🕚🕦🕛🕧'
+CLOCKS = [
+    '🕐',
+    '🕜',
+    '🕑',
+    '🕝',
+    '🕒',
+    '🕞',
+    '🕓',
+    '🕟',
+    '🕔',
+    '🕠',
+    '🕕',
+    '🕡',
+    '🕖',
+    '🕢',
+    '🕗',
+    '🕣',
+    '🕘',
+    '🕤',
+    '🕙',
+    '🕥',
+    '🕚',
+    '🕦',
+    '🕛',
+    '🕧',
+]
 
 QUARTER = 15
 THREE_QUARTERS = 45
 
 
-def clocks(now: datetime) -> str:
+def clocks(now: time) -> str:
     """Io ho HH:00, HH:30, HH+1:00 .
 
     se ho MM < 15 uso HH:00
@@ -37,7 +64,7 @@ def clocks(now: datetime) -> str:
 
 def main() -> None:
     basicConfig(level=INFO, format='%(message)s')
-    info(clocks(datetime.now()))
+    info(clocks(datetime.now(tz=ZoneInfo('Europe/Rome')).time()))
 
 
 if __name__ == '__main__':
