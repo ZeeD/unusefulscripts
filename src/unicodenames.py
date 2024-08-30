@@ -1,12 +1,12 @@
-#!/usr/bin/env python
-
 from logging import INFO
 from logging import basicConfig
 from logging import error
-from logging import info
+from logging import getLogger
 from sys import argv
 from unicodedata import category
 from unicodedata import name
+
+logger = getLogger(__name__)
 
 
 def unicode_names(string: str) -> list[str]:
@@ -27,10 +27,10 @@ def main() -> None:
 
     for i, string in enumerate(args):
         if i > 0:
-            info('')
-        info('string: %r', string)
+            logger.info('')
+        logger.info('string: %r', string)
         for name_ in unicode_names(string):
-            info(name_)
+            logger.info(name_)
 
 
 if __name__ == '__main__':

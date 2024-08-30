@@ -1,111 +1,86 @@
-#!/usr/bin/env python
+from datetime import UTC
+from datetime import datetime
+from email.utils import parsedate
+from http.client import HTTPConnection
+from http.client import HTTPResponse
+from itertools import takewhile
+from logging import INFO
+from logging import basicConfig
+from logging import getLogger
+from pathlib import Path
+from time import sleep
+from typing import TYPE_CHECKING
+from urllib.request import urlopen
 
-import datetime
-import email.utils
-import itertools
-import os
-import sys
-import time
+from sdbus_block.notifications import FreedesktopNotifications
 
-import dbus
-import httplib
-import urllib2
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+logger = getLogger(__name__)
+
 
 LOCAL_PATH = '/var/lib/slackpkg/ChangeLog.txt'
-REMOTE_DOMAIN = 'mirror2.mirror.garr.it'
-REMOTE_PATH = '/pub/1/slackware/slackware64-current/ChangeLog.txt'
+REMOTE_DOMAIN = 'slackware.mirror.garr.it'
+REMOTE_PATH = '/slackware/slackware64-current/ChangeLog.txt'
 TEXT_ENCODING = 'latin1'
 
 
-class debug:
-    """decorate function to trace the callstack"""
-
-    enabled = False
-    fmt = '{}%s [%s: %s]\n'
-
-    def __init__(self, fun):
-        self.fun = fun
-        self.fmt = debug.fmt.format(self.fun.func_name)
-
-    def __call__(self, *args):
-        try:
-            ret = self.fun(*args)
-            if debug.enabled:
-                sys.stderr.write(self.fmt % (args, 'ret', ret))
-            return ret
-        except Exception as e:
-            if debug.enabled:
-                sys.stderr.write(self.fmt % (args, 'e', e))
-            raise
-
-
-@debug
-def remote_last_modified():
-    """Find the last modified time on the remote changelog"""
-    conn = httplib.HTTPConnection(REMOTE_DOMAIN)
+def remote_last_modified() -> datetime:
+    """Find the last modified time on the remote changelog."""
+    conn = HTTPConnection(REMOTE_DOMAIN)
     conn.request('HEAD', REMOTE_PATH)
     res = conn.getresponse()
     last_modified_header = res.getheader('last-modified')
-    last_modified_parsed = email.utils.parsedate(last_modified_header)
-    return datetime.datetime(*last_modified_parsed[:6])
+    last_modified_parsed = parsedate(last_modified_header)
+    if last_modified_parsed is None:
+        raise ValueError
+    return datetime(*last_modified_parsed[:6], tzinfo=UTC)
 
 
-@debug
-def local_last_modified():
-    """Find the last modified time on my machine"""
-    mtime = os.path.getmtime(LOCAL_PATH)
-    return datetime.datetime.fromtimestamp(mtime)
+def local_last_modified() -> datetime:
+    """Find the last modified time on my machine."""
+    mtime = Path(LOCAL_PATH).stat().st_mtime
+    return datetime.fromtimestamp(mtime, tz=UTC)
 
 
-@debug
-def remote_content():
-    """Retrieve the remote changelog"""
-    remote = urllib2.urlopen('http://' + REMOTE_DOMAIN + REMOTE_PATH)
+def remote_content() -> list[str]:
+    """Retrieve the remote changelog."""
+    remote: HTTPResponse = urlopen('https://' + REMOTE_DOMAIN + REMOTE_PATH)
     return remote.read().decode(TEXT_ENCODING).split('\n')
 
 
-@debug
-def local_content():
-    """Retrieve the local changelog content
+def local_content() -> list[str]:
+    """Retrieve the local changelog content.
+
     (in pratice I just need the first row)
     """
-    with open(LOCAL_PATH) as local:
-        return local.read().decode(TEXT_ENCODING).split('\n')
+    with Path(LOCAL_PATH).open() as local:
+        return local.read().split('\n')
 
 
-@debug
-def diff(list1, list2):
-    """Not a real differ, it expect list1 = [new1|new2|new3] + list2
-    return all first element of list1; break if found in the head row of list2
+def diff(list1: list[str], list2: list[str]) -> 'Iterable[str]':
+    """Return all first element of list1; break if found the head of list2.
+
+    not a real differ, it expect list1 = [new1|new2|new3] + list2
     """
-    return itertools.takewhile(lambda row: row != list2[0], list1)
+    return takewhile(lambda row: row != list2[0], list1)
 
 
-@debug
-def notify(news):
-    """Send a popup to kde with the news"""
-    dbus.SessionBus().get_object('org.kde.knotify', '/Notify').event(
-        'warning',
-        'kde',
-        [],
+def notify(news: 'Iterable[str]') -> None:
+    """Send a popup to kde with the news."""
+    FreedesktopNotifications().notify(
         'SlackNews',
-        '<p>' + '<br />'.join(news) + '</p>',
-        [],
-        [],
-        0,
-        0,
-        dbus_interface='org.kde.KNotify',
+        summary='SlackNews',
+        body='<p>' + '<br />'.join(news) + '</p>',
     )
 
 
-@debug
-def main():
-    """Main loop body
-    check for news; if true, show a popup on kde.
-    """
-    remote = remote_last_modified()
-    local = local_last_modified()
-    local_is_newer = local < remote
+def check() -> None:
+    """Check for news; if true, show a popup on kde."""
+    remote_dt = remote_last_modified()
+    local_dt = local_last_modified()
+    local_is_newer = local_dt < remote_dt
     if local_is_newer:  # there are news!
         remote = remote_content()
         local = local_content()
@@ -113,20 +88,21 @@ def main():
         notify(news)
 
 
-@debug
-def loop():
-    """Main loop
-    every hour call the main loop body
-    """
+def loop() -> None:
+    """Check every hour."""
     while True:
         try:
-            main()
-            time.sleep(60 * 60)  # one hour, in seconds
+            check()
+            sleep(60 * 60)  # one hour, in seconds
         except KeyboardInterrupt:
-            raise SystemExit('\nbye!')
+            logger.info('bye!')
+            raise SystemExit from None
+
+
+def main() -> None:
+    basicConfig(level=INFO, format='%(message)s')
+    loop()
 
 
 if __name__ == '__main__':
-    # debug.enabled = True
-    # main()
-    loop()
+    main()

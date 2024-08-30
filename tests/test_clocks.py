@@ -1,16 +1,19 @@
-from collections.abc import Iterator
 from datetime import date
 from datetime import datetime
 from datetime import time
 from datetime import timedelta
+from typing import TYPE_CHECKING
 from unittest import TestCase
 
 from clocks import clocks
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
 
 def times(
     start: str, end: str, delta: timedelta = timedelta(minutes=1)
-) -> Iterator[time]:
+) -> 'Iterator[time]':
     d = date.fromordinal(1)
 
     start_dt = datetime.combine(d, time.fromisoformat(start))

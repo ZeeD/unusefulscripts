@@ -1,19 +1,15 @@
-#!/usr/bin/env python3
-
+from logging import INFO
+from logging import basicConfig
+from logging import getLogger
 from optparse import OptionParser
-from os import rename
+from optparse import Values
+from pathlib import Path
+
+logger = getLogger(__name__)
 
 
-def main():
-    option_parser = build_option_parser()
-    options, args = option_parser.parse_args()
-    output = args[0]
-
-    ripristina(output, options)
-
-
-def build_option_parser():
-    """Create an OptionParser istance, add the user options and return it"""
+def build_option_parser() -> OptionParser:
+    """Create an OptionParser istance, add the user options and return it."""
     parser = OptionParser(version='%prog 0.1', usage='%prog [OPTIONS] OUTPUT')
     parser.add_option(
         '-t',
@@ -41,13 +37,22 @@ def build_option_parser():
     return parser
 
 
-def ripristina(output, options):
+def ripristina(output: str, options: Values) -> None:
     for row in output.split('\n'):
         old_name, new_name = row.split(options.separator)
         if options.verbose:
-            print('mv %r %r;' % (new_name, old_name))
+            logger.info('mv %r %r;', new_name, old_name)
         if not options.test:
-            rename(new_name, old_name)
+            Path(new_name).rename(old_name)
+
+
+def main() -> None:
+    basicConfig(level=INFO, format='%(message)s')
+    option_parser = build_option_parser()
+    options, args = option_parser.parse_args()
+    output = args[0]
+
+    ripristina(output, options)
 
 
 if __name__ == '__main__':

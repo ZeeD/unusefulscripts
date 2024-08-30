@@ -1,16 +1,17 @@
-#!/usr/bin/env python
-
-from os import mkdir
-from os.path import basename
-from os.path import join
+from logging import INFO
+from logging import basicConfig
+from logging import getLogger
+from optparse import OptionParser
+from optparse import Values
+from pathlib import Path
 
 from PIL import Image
 
+logger = getLogger(__name__)
 
-def parse_options():
-    """Create an OptionParser istance, add the user options and return it"""
-    from optparse import OptionParser
 
+def parse_options() -> OptionParser:
+    """Create an OptionParser istance, add the user options and return it."""
     parser = OptionParser(version='%prog 0.1', usage='%prog [OPTIONS] IMAGES')
     parser.add_option(
         '-s',
@@ -45,26 +46,26 @@ def parse_options():
     return parser
 
 
-def resize(options, image):
-    size = map(int, options.size.split('x'))
-    dest = join(options.target_directory, basename(image))
+def resize(options: Values, image: str) -> None:
+    _size_0_raw, _size_1_raw = options.size.split('x')
+    size = float(_size_0_raw), float(_size_1_raw)
+    dest = Path(options.target_directory) / Path(image).name
     if options.verbose:
-        print('Resizing %s @ %dx%d as %s' % (image, size[0], size[1], dest))
+        logger.info('Resizing %s @ %dx%d as %s', image, size[0], size[1], dest)
     im = Image.open(image)
-    im.thumbnail(size, Image.ANTIALIAS)
+    im.thumbnail(size, Image.Resampling.LANCZOS)
     if not options.test:
         im.save(dest)
 
 
-def main():
+def main() -> None:
+    basicConfig(level=INFO, format='%(message)s')
     parser = parse_options()
     options, args = parser.parse_args()
     if not args:
-        raise SystemExit(parser.print_usage())
-    try:
-        mkdir(options.target_directory)
-    except OSError:
-        pass
+        parser.print_usage()
+        raise SystemExit
+    Path(options.target_directory).mkdir(parents=True, exist_ok=True)
     for image in args:
         resize(options, image)
 
