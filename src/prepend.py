@@ -9,7 +9,9 @@ logger = getLogger(__name__)
 
 
 def prepend(text: str, filename: Path) -> None:
-    raise NotImplementedError
+    orig = filename.read_text()
+    new = f'{text}\n{orig}'
+    filename.write_text(new)
 
 
 def usage(name: str = argv[0]) -> NoReturn:
