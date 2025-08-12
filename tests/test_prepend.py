@@ -9,11 +9,11 @@ from prepend import prepend
 class TestPrepend(TestCase):
     @override
     def setUp(self) -> None:
-        self.tmp = NamedTemporaryFile(mode='w', delete=False)
-        self.tmp.write('''foo
+        self.tmp = NamedTemporaryFile(mode='w', delete=False)  # noqa:SIM115
+        self.tmp.write("""foo
 bar
 baz
-''')
+""")
         self.tmp.close()
         self.filename = Path(self.tmp.name)
 
@@ -23,8 +23,11 @@ baz
 
     def test_prepend(self) -> None:
         prepend('prepend', self.filename)
-        self.assertEqual('''prepend
+        self.assertEqual(
+            """prepend
 foo
 bar
 baz
-''', self.filename.read_text())
+""",
+            self.filename.read_text(),
+        )

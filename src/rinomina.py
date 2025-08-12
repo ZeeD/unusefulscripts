@@ -7,7 +7,7 @@ from optparse import OptionValueError
 from optparse import Values
 from pathlib import Path
 
-from PIL.Image import open
+from PIL.Image import open as image_open
 
 logger = getLogger(__name__)
 
@@ -18,9 +18,9 @@ def check_dir(
     """Check if a value is a directory."""
     if not Path(value).is_dir():
         raise OptionValueError(value)
-    if parser.values is None:  # noqa: PD011
+    if parser.values is None:
         parser.values = Values()
-    parser.values.dir = value  # noqa: PD011
+    parser.values.dir = value
 
 
 def sort_images(image_file_name: Path) -> tuple[float, float]:
@@ -34,7 +34,7 @@ def sort_images(image_file_name: Path) -> tuple[float, float]:
     - a parità di diagonale, sono uguali :P
     """
     try:
-        im_x, im_y = open(image_file_name).size
+        im_x, im_y = image_open(image_file_name).size
     except Exception:
         logger.exception(image_file_name)
         raise
@@ -142,7 +142,7 @@ def main() -> None:
         (
             filename
             for filename in curdir.iterdir()
-            if filename.is_file() or options.also_dir and filename.is_dir()
+            if filename.is_file() or (options.also_dir and filename.is_dir())
         ),
         key=sort_images if options.imgs else None,
         reverse=options.imgs,
@@ -168,7 +168,7 @@ def main() -> None:
 
         if options.verbose:
             if options.imgs:
-                im_x, im_y = open(sorgente).size
+                im_x, im_y = image_open(sorgente).size
                 logger.info(
                     '%s -> %s (%sx%s, %s, %s)',
                     sorgente,

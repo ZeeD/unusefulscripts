@@ -1,4 +1,3 @@
-from collections.abc import Hashable
 from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
@@ -11,9 +10,6 @@ from logging import getLogger
 from optparse import OptionGroup
 from optparse import OptionParser
 from optparse import Values
-from os.path import join
-from os.path import split
-from os.path import splitext
 from pathlib import Path
 from re import search
 from subprocess import PIPE
@@ -28,6 +24,7 @@ from PIL import Image
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Hashable
     from collections.abc import Iterable
     from collections.abc import Iterator
 
@@ -43,6 +40,7 @@ class MetaData:
 
     filename: Path
     datetime: datetime
+    split: tuple[Path, str, str]
 
     def __init__(self, image_filename: str, tagname: str) -> None:
         """Construct a datetime object.
@@ -60,9 +58,11 @@ class MetaData:
         self.datetime = datetime.strptime(
             exiftags[tag], '%Y:%m:%d %H:%M:%S'
         ).astimezone(UTC)
-        dirname, basename = split(image_filename)
-        basename, ext = splitext(basename)
-        self.split = dirname, basename, ext
+        self.split = (
+            self.filename.parent,
+            self.filename.stem,
+            self.filename.suffix,
+        )
 
 
 class MovMetaData(MetaData):
@@ -74,7 +74,7 @@ class MovMetaData(MetaData):
         self.filename = Path(mov_filename)
         try:
             cmdline = ('exiftool', '-CreateDate', '-b', mov_filename)
-            stdout = Popen(cmdline, stdout=PIPE, text=True).communicate()[0]
+            stdout = Popen(cmdline, stdout=PIPE, text=True).communicate()[0]  # noqa: S603
         except OSError:
             msg = f'{mov_filename}: No exif tags found (maybe no exiftool?)'
             raise RuntimeError(msg) from None
@@ -82,9 +82,11 @@ class MovMetaData(MetaData):
             self.datetime = datetime.strptime(
                 stdout, '%Y:%m:%d %H:%M:%S'
             ).astimezone(UTC)
-            dirname, basename = split(mov_filename)
-            basename, ext = splitext(basename)
-            self.split = dirname, basename, ext
+            self.split = (
+                self.filename.parent,
+                self.filename.stem,
+                self.filename.suffix,
+            )
 
 
 class AviMetaData(MetaData):
@@ -95,16 +97,18 @@ class AviMetaData(MetaData):
     ) -> None:  # tagname is ignored.
         self.filename = Path(mov_filename)
         cmdline = ('exiftool', '-DateTimeOriginal', '-b', mov_filename)
-        stdout = Popen(cmdline, stdout=PIPE, text=True).communicate()[0]
+        stdout = Popen(cmdline, stdout=PIPE, text=True).communicate()[0]  # noqa: S603
         self.datetime = datetime.strptime(
             stdout, '%Y:%m:%d %H:%M:%S'
         ).astimezone(UTC)
-        dirname, basename = split(mov_filename)
-        basename, ext = splitext(basename)
-        self.split = dirname, basename, ext
+        self.split = (
+            self.filename.parent,
+            self.filename.stem,
+            self.filename.suffix,
+        )
 
 
-def heuristic_by_date(pair: tuple[MetaData, MetaData | None]) -> Hashable:
+def heuristic_by_date(pair: tuple[MetaData, MetaData | None]) -> 'Hashable':
     """Group by date."""
     (a, _) = pair
     return a.datetime.date()
@@ -163,7 +167,7 @@ def get_common_prefix(list_of_datetimes: 'Iterator[datetime]') -> str:
     return ''.join(ret)
 
 
-def new_file(metadata: MetaData, common_prefix: str, options: Values) -> str:
+def new_file(metadata: MetaData, common_prefix: str, options: Values) -> Path:
     dirname, basename, ext = metadata.split
     # FIX: se common_prefix è della forma DD+(DD), vorrò avere come nome file
     # "DD hh_mm_ss.jpg", e non solo 'hh_mm_ss.jpg'
@@ -172,13 +176,17 @@ def new_file(metadata: MetaData, common_prefix: str, options: Values) -> str:
     else:
         filename = metadata.datetime.strftime('%T')
 
+    _tmp = Path(common_prefix)
     if options.group_in_directories:
-        central_part = join(common_prefix, filename)
+        central_part = _tmp / filename
     else:
-        central_part = common_prefix + ' ' + filename
+        central_part = _tmp.with_name(f'{_tmp.name} {filename}')
     if options.preserve_filename:
-        central_part += ' - ' + basename
-    return join(dirname, central_part) + ext
+        central_part = central_part.with_name(
+            f'{central_part.name} - {basename}'
+        )
+    ret = dirname / central_part
+    return ret.with_suffix(ext)
 
 
 def new_dir(metadata: MetaData, common_prefix: str, _options: Values) -> Path:
@@ -214,6 +222,24 @@ def get_metadatas(options: Values, args: list[str]) -> list[MetaData]:
     return metadatas
 
 
+def _estrai_data(options: Values, mdos: 'Iterable[MetaData]') -> None:
+    mdos1, mdos2 = tee(mdos)
+    common_prefix = get_common_prefix(md.datetime for md in mdos1)
+    for metadata in mdos2:
+        if options.group_in_directories:
+            dirname = new_dir(metadata, common_prefix, options)
+            if not dirname.is_dir():
+                if options.verbose:
+                    logger.info('mkdir %r', dirname)
+                if not options.test:
+                    dirname.mkdir(parents=True)
+        filename = new_file(metadata, common_prefix, options)
+        if options.verbose:
+            logger.info('mv %r %r', metadata.filename, filename)
+        if not options.test:
+            metadata.filename.rename(filename)
+
+
 def estrai_data(options: Values, args: list[str]) -> None:
     metadatas = get_metadatas(options, args)
 
@@ -222,25 +248,10 @@ def estrai_data(options: Values, args: list[str]) -> None:
             logger.info('%s:\t%s', metadata.filename, metadata.datetime)
         return
 
-    heuristic = get_heuristic(options)
     for mdos in group_by(
-        sorted(metadatas, key=lambda i: i.datetime), heuristic
+        sorted(metadatas, key=lambda i: i.datetime), get_heuristic(options)
     ):
-        mdos1, mdos2 = tee(mdos)
-        common_prefix = get_common_prefix(md.datetime for md in mdos1)
-        for metadata in mdos2:
-            if options.group_in_directories:
-                dirname = new_dir(metadata, common_prefix, options)
-                if not dirname.is_dir():
-                    if options.verbose:
-                        logger.info('mkdir %r', dirname)
-                    if not options.test:
-                        dirname.mkdir(parents=True)
-            filename = new_file(metadata, common_prefix, options)
-            if options.verbose:
-                logger.info('mv %r %r', metadata.filename, filename)
-            if not options.test:
-                metadata.filename.rename(filename)
+        _estrai_data(options, mdos)
 
 
 def parse_args() -> tuple[Values, list[str]]:

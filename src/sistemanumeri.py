@@ -88,7 +88,7 @@ def multi_max(matrix: 'Iterable[tuple[int | str, ...]]') -> list[int]:
     """
     out: list[int] = []
     for row in matrix:
-        for index, number in enumerate(cast(tuple[int, ...], row[1::2])):
+        for index, number in enumerate(cast('tuple[int, ...]', row[1::2])):
             try:
                 current_max = out[index]
             except IndexError:
@@ -111,16 +111,16 @@ def rinomina(tupla: tuple[str | int, ...], digits: 'Sequence[int]') -> str:
 
     Use for each number the corresponding needed digits element.
     """
-    ret = [cast(str, tupla[0])]
+    ret = [cast('str', tupla[0])]
     i = 0
     while True:
         try:
-            numero = cast(int, tupla[2 * i + 1])
+            numero = cast('int', tupla[2 * i + 1])
         except IndexError:
             break
         digit = digits[i]
         stringa = tupla[2 * i + 2]
-        ret.append('%0*d%s' % (digit, numero, stringa))
+        ret.append(f'{numero:0{digit}}{stringa}')
         i += 1
     return ''.join(ret)
 

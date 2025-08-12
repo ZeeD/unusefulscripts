@@ -1,6 +1,5 @@
 from logging import INFO
 from logging import basicConfig
-from logging import error
 from logging import getLogger
 from sys import argv
 from unicodedata import category
@@ -22,7 +21,7 @@ def main() -> None:
     argv0, *args = argv
 
     if not args:
-        error('Uso: %s [strings]*', argv0)
+        logger.error('Uso: %s [strings]*', argv0)
         raise SystemExit(-1)
 
     for i, string in enumerate(args):

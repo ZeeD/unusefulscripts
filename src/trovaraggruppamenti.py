@@ -31,7 +31,7 @@ def print_one_row(
     elements = (ppr, nr, ps, pt, ps - pt)
     logger.info(
         format_,
-        ('%d (== 4x%d)' % (elements[0], elements[0] / 4)).center(headers_l[0]),
+        (f'{elements[0]} (== 4x{elements[0] / 4})').center(headers_l[0]),
         *(
             str(n).center(len_)
             for n, len_ in list(zip(elements, headers_l, strict=False))[1:]
