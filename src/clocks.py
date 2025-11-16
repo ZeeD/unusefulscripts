@@ -3,9 +3,10 @@ from datetime import time
 from logging import INFO
 from logging import basicConfig
 from logging import getLogger
+from typing import Final
 from zoneinfo import ZoneInfo
 
-CLOCKS = [
+CLOCKS: Final = [
     '🕐',
     '🕜',
     '🕑',
@@ -31,11 +32,11 @@ CLOCKS = [
     '🕛',
     '🕧',
 ]
+QUARTER: Final = 15
+THREE_QUARTERS: Final = 45
+TZ: Final = ZoneInfo('Europe/Rome')
 
-QUARTER = 15
-THREE_QUARTERS = 45
-
-logger = getLogger(__name__)
+logger: Final = getLogger(__name__)
 
 
 def clocks(now: time) -> str:
@@ -49,13 +50,13 @@ def clocks(now: time) -> str:
     minute = now.minute
 
     if minute < QUARTER:
-        # 1:00 è all'indice 0, 2:00 all'indice 2,
-        # 13:00 all'indice 0, 14:00 all'indice 2
+        # 01:00 è all'indice 0, 02:00 all'indice 2
+        # 13:00 è all'indice 0, 14:00 all'indice 2
         return CLOCKS[(hour - 1) * 2 % len(CLOCKS)]
 
     if minute < THREE_QUARTERS:
-        # 1:30 è all'indice 1, 2:30 all' indice 3,
-        # 13:30 all'indice 1, 14:30 all'indice 3
+        # 01:30 è all'indice 1, 02:30 all'indice 3
+        # 13:30 è all'indice 1, 14:30 all'indice 3
         return CLOCKS[(hour - 1) * 2 % len(CLOCKS) + 1]
 
     # possibile overflow alle 12:45
@@ -64,7 +65,9 @@ def clocks(now: time) -> str:
 
 def main() -> None:
     basicConfig(level=INFO, format='%(message)s')
-    logger.info(clocks(datetime.now(tz=ZoneInfo('Europe/Rome')).time()))
+    now = datetime.now(tz=TZ).time()
+    clock = clocks(now)
+    logger.info('%s', clock)
 
 
 if __name__ == '__main__':
