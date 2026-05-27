@@ -106,14 +106,14 @@ lint.isort.force-single-line = true
 column_width = 80
 indent = 4
 
+[tool.mypy]
+mypy_path = [ "src", "tests" ]
+strict = true
+warn_unused_configs = true
+
 [tool.coverage]
 run.branch = true
 run.source = [ "src", "tests" ]
 report.show_missing = true
 report.skip_empty = true
 report.sort = "Cover"
-
-[tool.mypy]
-mypy_path = [ "src", "tests" ]
-strict = true
-warn_unused_configs = true
