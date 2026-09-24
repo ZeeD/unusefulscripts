@@ -1,0 +1,73 @@
+from datetime import time
+from unittest import TestCase
+
+from fuzzyclock import fuzzyclock
+
+
+class TestFuzzyclock(TestCase):
+    def test_fuzzyclock(self) -> None:
+        for now, expected in [
+            (time(0, 0), 'mezzanotte'),
+            (time(1, 1), 'una'),
+            (time(2, 2), 'due'),
+            (time(3, 3), 'tre'),
+            (time(4, 4), 'quattro'),
+            (time(5, 5), 'cinque e cinque'),
+            (time(6, 6), 'sei e cinque'),
+            (time(7, 7), 'sette e cinque'),
+            (time(8, 8), 'otto e cinque'),
+            (time(9, 9), 'nove e cinque'),
+            (time(10, 10), 'dieci e dieci'),
+            (time(11, 11), 'undici e dieci'),
+            (time(12, 12), 'dodici e dieci'),
+            (time(13, 13), 'una e dieci'),
+            (time(14, 14), 'due e dieci'),
+            (time(15, 15), 'tre e un quarto'),
+            (time(16, 16), 'quattro e un quarto'),
+            (time(17, 17), 'cinque e un quarto'),
+            (time(18, 18), 'sei e un quarto'),
+            (time(19, 19), 'sette e un quarto'),
+            (time(20, 20), 'otto e venti'),
+            (time(21, 21), 'nove e venti'),
+            (time(22, 22), 'dieci e venti'),
+            (time(23, 23), 'undici e venti'),
+            (time(0, 24), 'mezzanotte e venti'),
+            (time(1, 25), 'una e venticinque'),
+            (time(2, 26), 'due e venticinque'),
+            (time(3, 27), 'tre e venticinque'),
+            (time(4, 28), 'quattro e venticinque'),
+            (time(5, 29), 'cinque e venticinque'),
+            (time(6, 30), 'sei e mezza'),
+            (time(7, 31), 'sette e mezza'),
+            (time(8, 32), 'otto e mezza'),
+            (time(9, 33), 'nove e mezza'),
+            (time(10, 34), 'dieci e mezza'),
+            (time(11, 35), 'undici e trentacinque'),
+            (time(12, 36), 'dodici e trentacinque'),
+            (time(13, 37), 'una e trentacinque'),
+            (time(14, 38), 'due e trentacinque'),
+            (time(15, 39), 'tre e trentacinque'),
+            (time(16, 40), 'cinque meno venti'),
+            (time(17, 41), 'sei meno venti'),
+            (time(18, 42), 'sette meno venti'),
+            (time(19, 43), 'otto meno venti'),
+            (time(20, 44), 'nove meno venti'),
+            (time(21, 45), 'dieci meno un quarto'),
+            (time(22, 46), 'undici meno un quarto'),
+            (time(23, 47), 'mezzanotte meno un quarto'),
+            (time(0, 48), 'una meno un quarto'),
+            (time(1, 49), 'due meno un quarto'),
+            (time(2, 50), 'tre meno dieci'),
+            (time(3, 51), 'quattro meno dieci'),
+            (time(4, 52), 'cinque meno dieci'),
+            (time(5, 53), 'sei meno dieci'),
+            (time(6, 54), 'sette meno dieci'),
+            (time(7, 55), 'otto meno cinque'),
+            (time(8, 56), 'nove meno cinque'),
+            (time(9, 57), 'dieci meno cinque'),
+            (time(10, 58), 'undici meno cinque'),
+            (time(11, 59), 'dodici meno cinque'),
+        ]:
+            with self.subTest(now=now, expected=expected):
+                actual = fuzzyclock(now)
+                self.assertEqual(expected, actual)
