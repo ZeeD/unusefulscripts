@@ -17,7 +17,7 @@ dependencies = [
     "beautifulsoup4>=4.12.3",
     "pillow>=10.4",
     "pypdf>=4.3.1",
-    "pyside6-essentials>=6.7.2",
+    "pyside6-essentials==6.12.0",
     "sdbus-notifications>=1.0.2",
 ]
 urls.Homepage = "https://github.com/ZeeD/unusefulscripts"
@@ -44,24 +44,24 @@ dev = [
 [tool.pdm]
 distribution = false
 scripts._.env = { PYTHONPATH = "src:tests" }
+scripts.clocks = { call = "clocks:main" }
+scripts.EstraiData = { call = "estraidata:main" }
 scripts.lint = { composite = [
     "pyproject-fmt pyproject.toml",
     "ruff format {args:.}",
     "ruff check {args:.}",
     "mypy {args:.}",
 ], keep_going = true }
-scripts.test = { composite = [
-    "coverage run -m unittest discover --verbose --locals --failfast --catch --start-directory tests {args}",
-    "coverage report",
-    "coverage erase",
-] }
-scripts.clocks = { call = "clocks:main" }
-scripts.EstraiData = { call = "estraidata:main" }
 scripts.prepend = { call = "prepend:main" }
 scripts.SistemaNumeri = { call = "sistemanumeri:main" }
 scripts.slacknews = { call = "slacknews:main" }
 scripts.sub_offset_changer = { call = "suboffsetchanger:main" }
 scripts.Televideo = { call = "televideo:main" }
+scripts.test = { composite = [
+    "coverage run -m unittest discover --verbose --locals --failfast --catch --start-directory tests {args}",
+    "coverage report",
+    "coverage erase",
+] }
 scripts.TrovaRaggruppamenti = { call = "trovaraggruppamenti:main" }
 scripts.unicodenames = { call = "unicodenames:main" }
 
@@ -76,6 +76,7 @@ lint.select = [ "ALL" ]
 lint.ignore = [
     "ANN1",
     "COM812",
+    "CPY001",
     "D1",
     "D203",
     "D213",
